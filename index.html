@@ -2,11 +2,1212 @@
 <html lang="hr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>HNL Prognoza</title>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#f4f6fa;
+      color:#172033;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif
+    }
+    button,input{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:1050px;margin:auto;padding:16px}
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px
+    }
+    .brand{font-size:24px;font-weight:800}
+    .sub{display:block;color:#778196;font-size:13px}
+    .nav{display:flex;flex-wrap:wrap;gap:5px}
+    .nav button{
+      border:0;
+      border-radius:9px;
+      padding:9px 12px;
+      background:#e6eaf1;
+      color:#253047;
+      font-weight:700
+    }
+    .nav button.active,
+    .primary{
+      background:#18233a!important;
+      color:white!important
+    }
+    .card{
+      background:white;
+      border:1px solid #e2e7ef;
+      border-radius:16px;
+      padding:18px;
+      margin:12px 0;
+      box-shadow:0 5px 20px rgba(20,30,50,.05)
+    }
+    .hero{
+      display:flex;
+      justify-content:space-between;
+      align-items:center
+    }
+    .hero h2{margin:4px 0}
+    .badge{
+      padding:7px 10px;
+      border-radius:999px;
+      background:#e4f5e8;
+      color:#28733b;
+      font-weight:800
+    }
+    .badge.lock{
+      background:#ffe6e6;
+      color:#8b3038
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px
+    }
+    .match h3{margin:7px 0 15px}
+    .match small,
+    .match label{
+      display:block;
+      color:#718097;
+      font-size:13px
+    }
+    .match label{
+      margin-top:12px;
+      font-weight:700
+    }
+    .score{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:6px
+    }
+    .score input,
+    .admin-score{
+      width:62px;
+      padding:9px;
+      border:1px solid #cbd3df;
+      border-radius:8px;
+      font-size:18px
+    }
+    .outcomes{
+      display:flex;
+      gap:6px;
+      margin:7px 0 13px
+    }
+    .outcomes button{
+      flex:1;
+      border:0;
+      border-radius:8px;
+      padding:10px;
+      background:#e7ebf2;
+      font-weight:800
+    }
+    .outcomes button.selected{
+      background:#d8e5ff;
+      outline:2px solid #5b80d3
+    }
+    .wide{
+      width:100%;
+      padding:11px;
+      border:0;
+      border-radius:9px;
+      font-weight:800
+    }
+    .login{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px
+    }
+    .login-card{
+      width:min(380px,100%);
+      background:white;
+      padding:28px;
+      border-radius:18px;
+      box-shadow:0 10px 35px rgba(20,30,50,.1);
+      text-align:center
+    }
+    .login-card input{
+      width:100%;
+      padding:12px;
+      margin:5px 0;
+      border:1px solid #cbd3df;
+      border-radius:9px
+    }
+    .error{color:#a22;margin-top:10px}
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:#18233a;
+      color:white;
+      padding:12px 15px;
+      border-radius:10px
+    }
+    table{
+      width:100%;
+      border-collapse:collapse
+    }
+    th,td{
+      text-align:left;
+      padding:11px 8px;
+      border-bottom:1px solid #edf0f4
+    }
+    .admin-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px
+    }
+    .loading{text-align:center;padding:40px}
+    @media(max-width:700px){
+      .grid{grid-template-columns:1fr}
+      .hero,.admin-row{
+        flex-direction:column;
+        align-items:flex-start
+      }
+      .app{padding:12px}
+      table{font-size:14px}
+    }
+  </style>
 </head>
+
 <body>
-  <h1>🏆 HNL Prognoza</h1>
-  <p>Aplikacija se uspješno pokrenula.</p>
+
+<div id="root"></div>
+
+<script type="module">
+
+import { createClient }
+from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+/* =====================================================
+   SUPABASE
+   ===================================================== */
+
+const SUPABASE_URL =
+  "https://tiumqykmnatvdljbfcwr.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_egI9OFlNjMyq0q6p3R4uLw_AqTRLh6T";
+
+const supabase =
+  createClient(SUPABASE_URL,SUPABASE_KEY);
+
+
+/* =====================================================
+   POČETNI BODOVI
+   ===================================================== */
+
+const START = {
+  "Gogi":23,
+  "Velin":21,
+  "Nikša":21,
+  "Toni":18,
+  "Igor":13,
+  "Danijel":8,
+  "Bojan":4
+};
+
+
+/* =====================================================
+   POMOĆNE FUNKCIJE
+   ===================================================== */
+
+const $ = id => document.getElementById(id);
+
+function outcome(home,away){
+  if(home > away) return "1";
+  if(home < away) return "2";
+  return "X";
+}
+
+function points(pred,match){
+
+  if(
+    !pred ||
+    match.actual_home_score === null ||
+    match.actual_away_score === null
+  ) return 0;
+
+  let p = 0;
+
+  if(
+    Number(pred.predicted_home_score) ===
+      Number(match.actual_home_score) &&
+    Number(pred.predicted_away_score) ===
+      Number(match.actual_away_score)
+  ){
+    p += 3;
+  }
+
+  if(
+    pred.predicted_outcome ===
+      outcome(
+        Number(match.actual_home_score),
+        Number(match.actual_away_score)
+      )
+  ){
+    p += 1;
+  }
+
+  return p;
+}
+
+function toast(message){
+  const x=document.createElement("div");
+  x.className="toast";
+  x.textContent=message;
+  document.body.appendChild(x);
+  setTimeout(()=>x.remove(),2500);
+}
+
+
+/* =====================================================
+   LOGIN
+   ===================================================== */
+
+function showLogin(){
+
+  document.body.innerHTML = `
+    <main class="login">
+
+      <form class="login-card" id="loginForm">
+
+        <div style="font-size:42px">🏆</div>
+
+        <h1>HNL Prognoza</h1>
+
+        <p>
+          Prijava igrača
+        </p>
+
+        <input
+          id="username"
+          placeholder="Korisničko ime"
+          autocomplete="username"
+          required
+        >
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Lozinka"
+          autocomplete="current-password"
+          required
+        >
+
+        <button class="primary wide">
+          PRIJAVI SE
+        </button>
+
+        <div id="loginError"></div>
+
+      </form>
+
+    </main>
+  `;
+
+  $("loginForm").onsubmit = async e => {
+
+    e.preventDefault();
+
+    $("loginError").innerHTML="";
+
+    const username =
+      $("username").value.trim().toLowerCase();
+
+    const password =
+      $("password").value;
+
+    const email =
+      username + "@hnl.local";
+
+    const {error} =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if(error){
+
+      $("loginError").innerHTML =
+        `<p class="error">
+          Neispravno korisničko ime ili lozinka.
+        </p>`;
+
+      return;
+    }
+
+    location.reload();
+  };
+}
+
+
+/* =====================================================
+   APLIKACIJA
+   ===================================================== */
+
+async function startApp(user){
+
+  document.body.innerHTML = `
+    <div class="app">
+
+      <header>
+
+        <div>
+          <div class="brand">
+            🏆 HNL Prognoza
+          </div>
+
+          <span class="sub" id="subtitle">
+            Učitavanje...
+          </span>
+        </div>
+
+        <div class="nav">
+
+          <button id="navPred">
+            Prognoze
+          </button>
+
+          <button id="navRes">
+            Rezultati
+          </button>
+
+          <button id="navTable">
+            Poredak
+          </button>
+
+          <button id="navAdmin" style="display:none">
+            Admin
+          </button>
+
+          <button id="logout">
+            Odjava
+          </button>
+
+        </div>
+
+      </header>
+
+      <div id="content"></div>
+
+    </div>
+  `;
+
+  const profileResult =
+    await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id",user.id)
+      .maybeSingle();
+
+  const profile =
+    profileResult.data;
+
+  if(!profile){
+
+    $("content").innerHTML =
+      `<div class="card">
+        Profil igrača nije pronađen.
+      </div>`;
+
+    return;
+  }
+
+  $("subtitle").textContent =
+    `Korisnik: ${profile.name}`;
+
+  if(profile.is_admin){
+
+    $("navAdmin").style.display="block";
+
+  }
+
+  $("logout").onclick = async ()=>{
+    await supabase.auth.signOut();
+    location.reload();
+  };
+
+
+  /* ===================================================
+     PODACI AKTIVNOG KOLA
+     =================================================== */
+
+  let round=null;
+  let matches=[];
+  let predictions={};
+
+  async function loadData(){
+
+    const r =
+      await supabase
+        .from("rounds")
+        .select("*")
+        .eq("is_finished",false)
+        .order("round_number",{ascending:true})
+        .limit(1)
+        .maybeSingle();
+
+    round=r.data;
+
+    if(round){
+
+      const m =
+        await supabase
+          .from("matches")
+          .select("*")
+          .eq("round_id",round.id)
+          .order("kickoff_at");
+
+      matches=m.data || [];
+
+    }else{
+
+      matches=[];
+
+    }
+
+    const p =
+      await supabase
+        .from("predictions")
+        .select("*")
+        .eq("user_id",user.id);
+
+    predictions={};
+
+    (p.data || []).forEach(x=>{
+      predictions[x.match_id]=x;
+    });
+  }
+
+
+  /* ===================================================
+     PROGNOZE
+     =================================================== */
+
+  async function showPredictions(){
+
+    await loadData();
+
+    const locked =
+      round &&
+      round.locked_at &&
+      new Date(round.locked_at) <= new Date();
+
+    $("content").innerHTML = `
+
+      <div class="card hero">
+
+        <div>
+
+          <small>K O L O</small>
+
+          <h2>
+            ${round ? round.round_number : "—"}
+          </h2>
+
+          <p>
+            ${profile.name}
+          </p>
+
+        </div>
+
+        <span class="badge ${locked ? "lock":""}">
+          ${locked
+            ? "🔒 Zaključano"
+            : "🟢 Otvoreno"}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <b>Pravila:</b>
+
+        točan rezultat = 3 boda,
+        točan ishod = 1 bod.
+
+        Ako pogodiš oboje =
+        <b>4 boda</b>.
+
+        Rezultat i ishod su neovisni.
+
+        <br><br>
+
+        Primjer:
+        <b>1:1 + 2</b>
+        je potpuno dopušten.
+
+      </div>
+
+      <div class="grid" id="matches"></div>
+    `;
+
+    const box=$("matches");
+
+    if(!matches.length){
+
+      box.innerHTML =
+        `<div class="card">
+          Trenutno nema aktivnog kola.
+        </div>`;
+
+      return;
+    }
+
+    matches.forEach(match=>{
+
+      const p =
+        predictions[match.id] || {};
+
+      const card =
+        document.createElement("div");
+
+      card.className="card match";
+
+      card.innerHTML=`
+
+        <small>
+          ${new Date(match.kickoff_at)
+            .toLocaleString("hr-HR",{
+              dateStyle:"medium",
+              timeStyle:"short"
+            })}
+        </small>
+
+        <h3>
+          ${match.home_team}
+          –
+          ${match.away_team}
+        </h3>
+
+        <label>
+          Rezultat
+        </label>
+
+        <div class="score">
+
+          <input
+            id="h${match.id}"
+            type="number"
+            min="0"
+            ${locked?"disabled":""}
+            value="${p.predicted_home_score ?? ""}"
+          >
+
+          <b>:</b>
+
+          <input
+            id="a${match.id}"
+            type="number"
+            min="0"
+            ${locked?"disabled":""}
+            value="${p.predicted_away_score ?? ""}"
+          >
+
+        </div>
+
+        <label>
+          Ishod
+        </label>
+
+        <div class="outcomes">
+
+          ${["1","X","2"].map(o=>`
+
+            <button
+              data-outcome="${o}"
+              class="${p.predicted_outcome===o?"selected":""}"
+              ${locked?"disabled":""}
+            >
+              ${o}
+            </button>
+
+          `).join("")}
+
+        </div>
+
+        ${
+          locked
+          ? ""
+          : `
+            <button
+              class="primary wide"
+              id="save${match.id}"
+            >
+              Spremi prognozu
+            </button>
+          `
+        }
+
+      `;
+
+      box.appendChild(card);
+
+
+      card
+        .querySelectorAll("[data-outcome]")
+        .forEach(btn=>{
+
+          btn.onclick=()=>{
+
+            card
+              .querySelectorAll("[data-outcome]")
+              .forEach(x=>
+                x.classList.remove("selected")
+              );
+
+            btn.classList.add("selected");
+
+          };
+
+        });
+
+
+      if(!locked){
+
+        $(`save${match.id}`).onclick =
+          async ()=>{
+
+            const home =
+              $(`h${match.id}`).value;
+
+            const away =
+              $(`a${match.id}`).value;
+
+            const selected =
+              card.querySelector(".selected");
+
+            if(
+              home === "" ||
+              away === "" ||
+              !selected
+            ){
+
+              toast(
+                "Unesi rezultat i ishod."
+              );
+
+              return;
+            }
+
+            const {error} =
+              await supabase
+                .from("predictions")
+                .upsert({
+
+                  user_id:user.id,
+
+                  match_id:match.id,
+
+                  predicted_home_score:
+                    Number(home),
+
+                  predicted_away_score:
+                    Number(away),
+
+                  predicted_outcome:
+                    selected.dataset.outcome
+
+                },{
+                  onConflict:
+                    "user_id,match_id"
+                });
+
+            if(error){
+
+              toast(error.message);
+
+            }else{
+
+              toast(
+                "Prognoza spremljena ✓"
+              );
+
+            }
+
+          };
+
+      }
+
+    });
+
+  }
+
+
+  /* ===================================================
+     REZULTATI
+     =================================================== */
+
+  async function showResults(){
+
+    await loadData();
+
+    let total=0;
+
+    matches.forEach(m=>{
+      total +=
+        points(predictions[m.id],m);
+    });
+
+    $("content").innerHTML=`
+
+      <div class="card">
+
+        <h2>Rezultati kola</h2>
+
+        <p>
+          Osvojeno u ovom kolu:
+          <b>${total} bodova</b>
+        </p>
+
+      </div>
+
+      <div class="grid" id="results"></div>
+    `;
+
+    matches.forEach(m=>{
+
+      const p=
+        predictions[m.id] || {};
+
+      const pts=
+        points(p,m);
+
+      const card=
+        document.createElement("div");
+
+      card.className="card";
+
+      card.innerHTML=`
+
+        <h3>
+          ${m.home_team}
+          –
+          ${m.away_team}
+        </h3>
+
+        <p>
+          Tvoja prognoza:
+          <b>
+            ${p.predicted_home_score ?? "–"}:
+            ${p.predicted_away_score ?? "–"}
+            /
+            ${p.predicted_outcome ?? "–"}
+          </b>
+        </p>
+
+        <p>
+          Stvarni rezultat:
+          <b>
+            ${
+              m.actual_home_score === null
+              ? "—"
+              : `${m.actual_home_score}:${m.actual_away_score}`
+            }
+          </b>
+        </p>
+
+        <strong>
+          ${
+            m.actual_home_score === null
+            ? "Čeka rezultat"
+            : pts + " boda"
+          }
+        </strong>
+      `;
+
+      $("results").appendChild(card);
+
+    });
+
+  }
+
+
+  /* ===================================================
+     UKUPNI POREDAK
+     =================================================== */
+
+  async function showTable(){
+
+    const profilesResult =
+      await supabase
+        .from("profiles")
+        .select("id,name")
+        .order("name");
+
+    const startsResult =
+      await supabase
+        .from("starting_points")
+        .select("user_id,points");
+
+    const predResult =
+      await supabase
+        .from("predictions")
+        .select("user_id,points");
+
+    const starts={};
+
+    (startsResult.data||[])
+      .forEach(x=>{
+        starts[x.user_id]=x.points;
+      });
+
+    const newPoints={};
+
+    (predResult.data||[])
+      .forEach(x=>{
+        newPoints[x.user_id]=
+          (newPoints[x.user_id]||0)+
+          (x.points||0);
+      });
+
+    const rows=
+      (profilesResult.data||[])
+      .filter(x=>START[x.name] !== undefined)
+      .map(x=>({
+
+        name:x.name,
+
+        start:
+          starts[x.id] ??
+          START[x.name] ??
+          0,
+
+        newPoints:
+          newPoints[x.id] || 0
+
+      }))
+      .map(x=>({
+
+        ...x,
+
+        total:
+          x.start+x.newPoints
+
+      }))
+      .sort((a,b)=>b.total-a.total);
+
+    $("content").innerHTML=`
+
+      <div class="card">
+
+        <h2>📊 Ukupni poredak</h2>
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>#</th>
+              <th>Igrač</th>
+              <th>Početno</th>
+              <th>Nova kola</th>
+              <th>Ukupno</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${rows.map((r,i)=>`
+
+              <tr>
+
+                <td>${i+1}.</td>
+
+                <td>
+                  <b>${r.name}</b>
+                </td>
+
+                <td>
+                  ${r.start}
+                </td>
+
+                <td>
+                  ${r.newPoints}
+                </td>
+
+                <td>
+                  <b>${r.total}</b>
+                </td>
+
+              </tr>
+
+            `).join("")}
+
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+  }
+
+
+  /* ===================================================
+     ADMIN
+     =================================================== */
+
+  async function showAdmin(){
+
+    if(!profile.is_admin){
+      return;
+    }
+
+    await loadData();
+
+    const locked =
+      round &&
+      round.locked_at &&
+      new Date(round.locked_at) <= new Date();
+
+    $("content").innerHTML=`
+
+      <div class="card">
+
+        <h2>👑 Admin panel</h2>
+
+        <p>
+          Administrator:
+          <b>Bojan</b>
+        </p>
+
+        <p>
+          Ovdje se unose stvarni rezultati.
+        </p>
+
+      </div>
+
+      <div id="adminMatches"></div>
+
+      <div class="card">
+
+        <button
+          class="primary wide"
+          id="finishRound"
+          ${locked?"disabled":""}
+        >
+          🏁 Obračunaj i završi kolo
+        </button>
+
+      </div>
+    `;
+
+    const box=
+      $("adminMatches");
+
+    matches.forEach(m=>{
+
+      const card=
+        document.createElement("div");
+
+      card.className=
+        "card admin-row";
+
+      card.innerHTML=`
+
+        <b>
+          ${m.home_team}
+          –
+          ${m.away_team}
+        </b>
+
+        <div>
+
+          <input
+            id="ah${m.id}"
+            class="admin-score"
+            type="number"
+            min="0"
+            value="${m.actual_home_score ?? ""}"
+          >
+
+          :
+
+          <input
+            id="aa${m.id}"
+            class="admin-score"
+            type="number"
+            min="0"
+            value="${m.actual_away_score ?? ""}"
+          >
+
+          <button id="saveResult${m.id}">
+            Spremi
+          </button>
+
+        </div>
+      `;
+
+      box.appendChild(card);
+
+      $(`saveResult${m.id}`).onclick =
+        async ()=>{
+
+          const h=
+            $(`ah${m.id}`).value;
+
+          const a=
+            $(`aa${m.id}`).value;
+
+          if(h==="" || a===""){
+
+            toast(
+              "Unesi oba gola."
+            );
+
+            return;
+          }
+
+          const {error}=
+            await supabase
+              .from("matches")
+              .update({
+
+                actual_home_score:
+                  Number(h),
+
+                actual_away_score:
+                  Number(a)
+
+              })
+              .eq("id",m.id);
+
+          if(error){
+
+            toast(error.message);
+
+          }else{
+
+            toast(
+              "Rezultat spremljen ✓"
+            );
+
+            await loadData();
+
+          }
+
+        };
+
+    });
+
+
+    $("finishRound").onclick =
+      async ()=>{
+
+        if(!round){
+
+          toast(
+            "Nema aktivnog kola."
+          );
+
+          return;
+        }
+
+        const incomplete=
+          matches.some(m=>
+            m.actual_home_score === null ||
+            m.actual_away_score === null
+          );
+
+        if(incomplete){
+
+          toast(
+            "Prvo unesi svih 5 rezultata."
+          );
+
+          return;
+        }
+
+        const confirmed=
+          confirm(
+            "Jesi li siguran? Nakon obračuna kolo će biti završeno."
+          );
+
+        if(!confirmed) return;
+
+        const {error}=
+          await supabase
+            .rpc(
+              "finish_round",
+              {p_round_id:round.id}
+            );
+
+        if(error){
+
+          toast(error.message);
+
+        }else{
+
+          toast(
+            "Kolo je obračunato ✓"
+          );
+
+          await showAdmin();
+
+        }
+
+      };
+
+  }
+
+
+  /* ===================================================
+     NAVIGACIJA
+     =================================================== */
+
+  $("navPred").onclick =
+    showPredictions;
+
+  $("navRes").onclick =
+    showResults;
+
+  $("navTable").onclick =
+    showTable;
+
+  $("navAdmin").onclick =
+    showAdmin;
+
+
+  await showPredictions();
+}
+
+
+/* =====================================================
+   POKRETANJE
+   ===================================================== */
+
+async function boot(){
+
+  const {data} =
+    await supabase.auth.getSession();
+
+  if(data.session){
+
+    await startApp(
+      data.session.user
+    );
+
+  }else{
+
+    showLogin();
+
+  }
+
+}
+
+boot();
+
+</script>
+
 </body>
 </html>
