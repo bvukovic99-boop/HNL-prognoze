@@ -18,306 +18,1709 @@ button{cursor:pointer}
 .card{background:#fff;border:1px solid #e1e5ec;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #17203312}
 .login{min-height:100vh;display:grid;place-items:center;padding:20px}
 .login-card{width:min(420px,100%);background:#fff;border:1px solid #e1e5ec;border-radius:16px;padding:24px;box-shadow:0 8px 30px #17203318}
-h1,h2,h3{margin-top:0}.muted{color:#6d778a}.danger{color:#b42318}.success{color:#087443}
+h1,h2,h3{margin-top:0}
+.muted{color:#6d778a}
+.danger{color:#b42318}
 label{display:block;font-weight:700;margin:10px 0 5px}
-input,select{width:100%;padding:10px 11px;border:1px solid #cfd5df;border-radius:9px;background:#fff}
+input{width:100%;padding:10px 11px;border:1px solid #cfd5df;border-radius:9px;background:#fff}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{border:0;border-radius:9px;padding:10px 14px;font-weight:700;background:#e6eaf1;color:#253047}
 .match{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #edf0f4}
-.match:last-child{border-bottom:0}.team{font-weight:750}.away{text-align:right}
-.score{display:flex;gap:5px;align-items:center}.score input{width:58px;text-align:center}
-.outcomes{display:flex;gap:5px;margin-top:7px}.outcomes button{border:1px solid #cfd5df;background:#fff;border-radius:7px;padding:5px 9px;font-weight:800}.outcomes button.sel{background:#18233a;color:#fff}
+.match:last-child{border-bottom:0}
+.team{font-weight:750}
+.away{text-align:right}
+.score{display:flex;gap:5px;align-items:center}
+.score input{width:58px;text-align:center}
+.outcomes{display:flex;gap:5px;margin-top:7px}
+.outcomes button{border:1px solid #cfd5df;background:#fff;border-radius:7px;padding:5px 9px;font-weight:800}
+.outcomes button.sel{background:#18233a;color:#fff}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef1f6;font-size:12px;font-weight:800}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #edf0f4}th{font-size:13px;color:#6d778a}
-.right{text-align:right}.center{text-align:center}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px;border-bottom:1px solid #edf0f4}
+th{font-size:13px;color:#6d778a}
+.right{text-align:right}
+.center{text-align:center}
 .hidden{display:none!important}
+.pred-list{font-size:14px;margin-top:7px}
+.pred-row{padding:5px 0;border-top:1px solid #f0f2f5}
 .toast{position:fixed;right:14px;bottom:14px;background:#18233a;color:#fff;padding:12px 14px;border-radius:10px;z-index:20;max-width:340px}
-@media(max-width:600px){.match{grid-template-columns:1fr}.away{text-align:left}.score{justify-content:flex-start}}
+@media(max-width:700px){
+.match{grid-template-columns:1fr}
+.away{text-align:left}
+.right{text-align:left}
+.center{text-align:left}
+}
 </style>
 </head>
+
 <body>
+
 <div id="root"></div>
 <div id="toast" class="toast hidden"></div>
 
 <script type="module">
+
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const SUPABASE_URL = "https://tiumqykmnatvdljbfcwr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_egI9OFlNjMyq0q6p3R4uLw_AqTRLh6T";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://tiumqykmnatvdljbfcwr.supabase.co";
 
-const START = {
-  "Gogi":23,"Velin":21,"Nikša":21,"Toni":18,
-  "Igor":13,"Danijel":8,"Bojan":4
+const SUPABASE_KEY="sb_publishable_egI9OFlNjMyq0q6p3R4uLw_AqTRLh6T";
+
+const supabase=createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================================
+   POČETNI BODOVI
+========================================= */
+
+const START={
+  "Gogi":32,
+  "Nikša":27,
+  "Velin":26,
+  "Toni":21,
+  "Igor":19,
+  "Danijel":12,
+  "Bojan":7
 };
 
-let user=null, profile=null, round=null, matches=[], predictions={};
+
+let user=null;
+let profile=null;
+let round=null;
+let matches=[];
+let predictions=[];
+let profiles=[];
 let currentPage="predictions";
 
+
+/* =========================================
+   POMOĆNE FUNKCIJE
+========================================= */
+
 function esc(v){
-  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+  return String(v??"").replace(
+    /[&<>"']/g,
+    m=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[m])
+  );
+
 }
+
+
 function toast(msg){
+
   const x=document.getElementById("toast");
-  x.textContent=msg;x.classList.remove("hidden");
-  clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.classList.add("hidden"),2800);
+
+  x.textContent=msg;
+
+  x.classList.remove("hidden");
+
+  clearTimeout(window.__toast);
+
+  window.__toast=setTimeout(
+    ()=>x.classList.add("hidden"),
+    2800
+  );
+
 }
-function outcome(h,a){
-  h=Number(h);a=Number(a);
-  if(h>a)return "1"; if(h<a)return "2"; return "X";
+
+
+function locked(){
+
+  return !!round?.locked_at &&
+    new Date(round.locked_at)<=new Date();
+
 }
+
+
 function fmtDate(s){
+
   if(!s)return "-";
-  return new Date(s).toLocaleString("hr-HR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  return new Date(s).toLocaleString(
+    "hr-HR",
+    {
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+    }
+  );
+
 }
-function locked(){return !!round?.locked_at && new Date(round.locked_at)<=new Date()}
+
+
+function nameById(id){
+
+  const p=profiles.find(x=>x.id===id);
+
+  return p?.name||"Igrač";
+
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
 
 function loginView(message=""){
+
   document.getElementById("root").innerHTML=`
+
   <div class="login">
+
     <form class="login-card" id="loginForm">
+
       <div style="font-size:42px">🏆</div>
+
       <h1>HNL Prognoza</h1>
-      <p class="muted">Prognoziraj utakmice SuperSport HNL-a.</p>
-      ${message?`<p class="danger">${esc(message)}</p>`:""}
+
+      <p class="muted">
+        Prognoziraj utakmice SuperSport HNL-a.
+      </p>
+
+      ${message
+        ?`<p class="danger">${esc(message)}</p>`
+        :""
+      }
+
       <label>Korisničko ime</label>
-      <input id="username" autocomplete="username" placeholder="npr. Bojan" required>
+
+      <input
+        id="username"
+        autocomplete="username"
+        placeholder="npr. Bojan"
+        required
+      >
+
       <label>Lozinka</label>
-      <input id="password" type="password" autocomplete="current-password" required>
-      <div class="actions"><button class="btn primary" style="width:100%">Prijava</button></div>
+
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      >
+
+      <div class="actions">
+
+        <button
+          class="btn primary"
+          style="width:100%"
+        >
+          Prijava
+        </button>
+
+      </div>
+
     </form>
-  </div>`;
+
+  </div>
+
+  `;
+
+
   document.getElementById("loginForm").onsubmit=login;
+
 }
+
 
 async function login(e){
+
   e.preventDefault();
-  const username=document.getElementById("username").value.trim();
-  const password=document.getElementById("password").value;
-  const {data,error}=await supabase.auth.signInWithPassword({
-    email:username.toLowerCase().endsWith("@hnl.local")?username.toLowerCase():username.toLowerCase()+"@hnl.local",
-    password
-  });
-  if(error){loginView(error.message);return}
+
+  const username=
+    document
+      .getElementById("username")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password=
+    document
+      .getElementById("password")
+      .value;
+
+
+  const email=
+    username.endsWith("@hnl.local")
+      ?username
+      :username+"@hnl.local";
+
+
+  const {data,error}=
+    await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+
+  if(error){
+
+    loginView(error.message);
+
+    return;
+
+  }
+
+
   await start(data.user);
+
 }
+
+
+/* =========================================
+   START APLIKACIJE
+========================================= */
 
 async function start(u){
+
   user=u;
-  const {data:p,error}=await supabase.from("profiles").select("*").eq("id",u.id).maybeSingle();
-  if(error){loginView("Greška pri učitavanju profila.");return}
+
+
+  const {
+    data:p,
+    error
+  }=
+    await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id",u.id)
+      .maybeSingle();
+
+
+  if(error||!p){
+
+    loginView(
+      "Greška pri učitavanju profila."
+    );
+
+    return;
+
+  }
+
+
   profile=p;
+
+
   await loadData();
-  if(profile?.must_change_password){showChangePassword();return}
+
+
+  if(profile.must_change_password){
+
+    showChangePassword();
+
+    return;
+
+  }
+
+
   render();
+
 }
+
+
+/* =========================================
+   UČITAVANJE PODATAKA
+========================================= */
 
 async function loadData(){
-  const r=await supabase.from("rounds").select("*").eq("is_finished",false).order("round_number",{ascending:true}).limit(1).maybeSingle();
-  if(r.error)throw new Error(r.error.message);
+
+  const r=
+    await supabase
+      .from("rounds")
+      .select("*")
+      .eq("is_finished",false)
+      .order(
+        "round_number",
+        {ascending:true}
+      )
+      .limit(1)
+      .maybeSingle();
+
+
+  if(r.error)
+    throw new Error(r.error.message);
+
+
   round=r.data;
+
   matches=[];
-  predictions={};
-  if(!round)return;
-  const m=await supabase.from("matches").select("*").eq("round_id",round.id).order("kickoff_at");
-  if(m.error)throw new Error(m.error.message);
+  predictions=[];
+  profiles=[];
+
+
+  const pr=
+    await supabase
+      .from("profiles")
+      .select(
+        "id,name,is_admin"
+      );
+
+
+  if(!pr.error)
+    profiles=pr.data||[];
+
+
+  if(!round)
+    return;
+
+
+  const m=
+    await supabase
+      .from("matches")
+      .select("*")
+      .eq("round_id",round.id)
+      .order("kickoff_at");
+
+
+  if(m.error)
+    throw new Error(m.error.message);
+
+
   matches=m.data||[];
-  const p=await supabase.from("predictions").select("*").eq("user_id",user.id);
-  if(!p.error)(p.data||[]).forEach(x=>predictions[x.match_id]=x);
+
+
+  /*
+     VAŽNO:
+     Učitavamo sve prognoze.
+
+     RLS u Supabaseu odlučuje
+     koje su dozvoljene korisniku.
+  */
+
+  const p=
+    await supabase
+      .from("predictions")
+      .select("*");
+
+
+  if(!p.error)
+    predictions=p.data||[];
+
 }
+
+
+/* =========================================
+   GLAVNI IZBORNIK
+========================================= */
 
 function shell(){
+
   document.getElementById("root").innerHTML=`
+
   <div class="app">
+
     <header>
-      <div><div class="brand">🏆 HNL Prognoza</div><span class="sub">Prijavljen: ${esc(profile?.name||"Igrač")}</span></div>
+
+      <div>
+
+        <div class="brand">
+          🏆 HNL Prognoza
+        </div>
+
+        <span class="sub">
+          Prijavljen:
+          ${esc(profile?.name||"Igrač")}
+        </span>
+
+      </div>
+
+
       <nav class="nav">
-        <button data-page="predictions">Prognoze</button>
-        <button data-page="results">Rezultati</button>
-        <button data-page="table">Poredak</button>
-        ${profile?.is_admin?'<button data-page="admin">Admin</button>':""}
-        <button id="logout">Odjava</button>
+
+        <button data-page="predictions">
+          Prognoze
+        </button>
+
+        <button data-page="results">
+          Rezultati
+        </button>
+
+        <button data-page="table">
+          Poredak
+        </button>
+
+        ${
+          profile?.is_admin
+          ?'<button data-page="admin">Admin</button>'
+          :""
+        }
+
+        <button id="logout">
+          Odjava
+        </button>
+
       </nav>
+
     </header>
+
+
     <main id="content"></main>
-  </div>`;
-  document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{currentPage=b.dataset.page;render()});
-  document.getElementById("logout").onclick=async()=>{await supabase.auth.signOut();user=null;profile=null;loginView()};
+
+  </div>
+
+  `;
+
+
+  document
+    .querySelectorAll("[data-page]")
+    .forEach(b=>{
+
+      b.onclick=()=>{
+
+        currentPage=b.dataset.page;
+
+        render();
+
+      };
+
+    });
+
+
+  document
+    .getElementById("logout")
+    .onclick=async()=>{
+
+      await supabase.auth.signOut();
+
+      user=null;
+      profile=null;
+
+      loginView();
+
+    };
+
 }
+
+
+/* =========================================
+   RENDER
+========================================= */
 
 function render(){
+
   shell();
-  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===currentPage));
-  if(currentPage==="predictions")showPredictions();
-  if(currentPage==="results")showResults();
-  if(currentPage==="table")showTable();
-  if(currentPage==="admin")showAdmin();
+
+
+  document
+    .querySelectorAll("[data-page]")
+    .forEach(b=>
+      b.classList.toggle(
+        "active",
+        b.dataset.page===currentPage
+      )
+    );
+
+
+  if(currentPage==="predictions")
+    showPredictions();
+
+
+  if(currentPage==="results")
+    showResults();
+
+
+  if(currentPage==="table")
+    showTable();
+
+
+  if(currentPage==="admin")
+    showAdmin();
+
 }
+
+
+/* =========================================
+   PROMJENA LOZINKE
+========================================= */
 
 function showChangePassword(){
+
   document.getElementById("root").innerHTML=`
-  <div class="login"><form class="login-card" id="changeForm">
-    <div style="font-size:42px">🔐</div>
-    <h2>Postavi novu lozinku</h2>
-    <p class="muted">Administrator je zatražio promjenu lozinke prije nastavka.</p>
-    <label>Nova lozinka</label><input id="newPass" type="password" minlength="6" required>
-    <label>Ponovi lozinku</label><input id="newPass2" type="password" minlength="6" required>
-    <div class="actions"><button class="btn primary" style="width:100%">Spremi novu lozinku</button></div>
-  </form></div>`;
-  document.getElementById("changeForm").onsubmit=async e=>{
-    e.preventDefault();
-    const a=document.getElementById("newPass").value,b=document.getElementById("newPass2").value;
-    if(a!==b){toast("Lozinke se ne podudaraju.");return}
-    const {error}=await supabase.auth.updateUser({password:a});
-    if(error){toast(error.message);return}
-    const {error:rpcError}=await supabase.rpc("clear_my_password_change");
-    if(rpcError){
-      toast("Lozinka je promijenjena, ali oznaku promjene treba očistiti u bazi.");
-      await loadData();render();return;
-    }
-    profile.must_change_password=false;
-    await loadData();render();
-  };
+
+  <div class="login">
+
+    <form class="login-card" id="changeForm">
+
+      <div style="font-size:42px">
+        🔐
+      </div>
+
+      <h2>
+        Postavi novu lozinku
+      </h2>
+
+      <p class="muted">
+        Prije nastavka moraš postaviti
+        svoju novu lozinku.
+      </p>
+
+      <label>
+        Nova lozinka
+      </label>
+
+      <input
+        id="newPass"
+        type="password"
+        minlength="6"
+        required
+      >
+
+      <label>
+        Ponovi lozinku
+      </label>
+
+      <input
+        id="newPass2"
+        type="password"
+        minlength="6"
+        required
+      >
+
+      <div class="actions">
+
+        <button
+          class="btn primary"
+          style="width:100%"
+        >
+          Spremi novu lozinku
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+  `;
+
+
+  document
+    .getElementById("changeForm")
+    .onsubmit=async e=>{
+
+      e.preventDefault();
+
+
+      const a=
+        document
+          .getElementById("newPass")
+          .value;
+
+
+      const b=
+        document
+          .getElementById("newPass2")
+          .value;
+
+
+      if(a!==b){
+
+        toast(
+          "Lozinke se ne podudaraju."
+        );
+
+        return;
+
+      }
+
+
+      const {error}=
+        await supabase.auth.updateUser({
+          password:a
+        });
+
+
+      if(error){
+
+        toast(error.message);
+
+        return;
+
+      }
+
+
+      const {
+        error:rpcError
+      }=
+        await supabase.rpc(
+          "clear_my_password_change"
+        );
+
+
+      if(rpcError){
+
+        toast(
+          "Lozinka je promijenjena, ali oznaka promjene nije očišćena."
+        );
+
+        return;
+
+      }
+
+
+      profile.must_change_password=false;
+
+      await loadData();
+
+      render();
+
+    };
+
 }
+
+
+/* =========================================
+   MOJA PROGNOZA
+========================================= */
+
+function myPrediction(matchId){
+
+  return predictions.find(
+    p=>
+      p.match_id===matchId &&
+      p.user_id===user.id
+  );
+
+}
+
+
+/* =========================================
+   PROGNOZE
+========================================= */
 
 function showPredictions(){
-  const c=document.getElementById("content");
-  if(!round){c.innerHTML='<div class="card"><h2>Nema aktivnog kola</h2><p class="muted">Trenutno nema otvorenog kola.</p></div>';return}
+
+  const c=
+    document.getElementById("content");
+
+
+  if(!round){
+
+    c.innerHTML=`
+      <div class="card">
+        <h2>Nema aktivnog kola</h2>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
   c.innerHTML=`
+
   <div class="card">
-    <h2>Prognoze — ${round.round_number}. kolo</h2>
-    <p class="muted">${locked()?"🔒 Kolo je zaključano.":"🟢 Prognoze su otvorene."} Zaključavanje: ${fmtDate(round.locked_at)}</p>
+
+    <h2>
+      Prognoze —
+      ${round.round_number}. kolo
+    </h2>
+
+    <p class="muted">
+
+      ${
+        locked()
+        ?"🔒 Kolo je zaključano."
+        :"🟢 Prognoze su otvorene."
+      }
+
+      Zaključavanje:
+      ${fmtDate(round.locked_at)}
+
+    </p>
+
   </div>
-  <div class="card" id="matches"></div>`;
-  const box=document.getElementById("matches");
+
+
+  <div
+    class="card"
+    id="matches"
+  ></div>
+
+  `;
+
+
+  const box=
+    document.getElementById("matches");
+
+
   matches.forEach(m=>{
-    const p=predictions[m.id]||{};
-    const h=p.predicted_home_score??"",a=p.predicted_away_score??"",o=p.predicted_outcome??"";
-    box.insertAdjacentHTML("beforeend",`
-      <div class="match" data-mid="${m.id}">
-        <div class="team">${esc(m.home_team)}<div class="score"><input class="ph" type="number" min="0" max="30" value="${esc(h)}" ${locked()?"disabled":""}><span>:</span><input class="pa" type="number" min="0" max="30" value="${esc(a)}" ${locked()?"disabled":""}></div></div>
-        <div class="center"><span class="badge">${fmtDate(m.kickoff_at)}</span><div class="outcomes">${["1","X","2"].map(x=>`<button class="ob ${o===x?"sel":""}" data-o="${x}" ${locked()?"disabled":""}>${x}</button>`).join("")}</div></div>
-        <div class="team away">${esc(m.away_team)}</div>
-      </div>`);
+
+    const p=
+      myPrediction(m.id)||{};
+
+
+    const h=
+      p.predicted_home_score??"";
+
+
+    const a=
+      p.predicted_away_score??"";
+
+
+    const o=
+      p.predicted_outcome??"";
+
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div
+        class="match"
+        data-mid="${m.id}"
+      >
+
+        <div class="team">
+
+          ${esc(m.home_team)}
+
+          <div class="score">
+
+            <input
+              class="ph"
+              type="number"
+              min="0"
+              max="30"
+              value="${esc(h)}"
+              ${locked()?"disabled":""}
+            >
+
+            <span>:</span>
+
+            <input
+              class="pa"
+              type="number"
+              min="0"
+              max="30"
+              value="${esc(a)}"
+              ${locked()?"disabled":""}
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="center">
+
+          <span class="badge">
+            ${fmtDate(m.kickoff_at)}
+          </span>
+
+          <div class="outcomes">
+
+            ${
+              ["1","X","2"]
+                .map(x=>`
+
+                  <button
+                    class="ob ${o===x?"sel":""}"
+                    data-o="${x}"
+                    ${locked()?"disabled":""}
+                  >
+                    ${x}
+                  </button>
+
+                `)
+                .join("")
+            }
+
+          </div>
+
+        </div>
+
+
+        <div class="team away">
+
+          ${esc(m.away_team)}
+
+        </div>
+
+      </div>
+
+      `
+    );
+
   });
-  if(!locked())box.insertAdjacentHTML("beforeend",'<div class="actions"><button class="btn primary" id="saveAll">Spremi prognoze</button></div>');
-  box.querySelectorAll(".ob").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll(".ob").forEach(x=>x.classList.remove("sel"));b.classList.add("sel")});
-  document.getElementById("saveAll")?.addEventListener("click",savePredictions);
+
+
+  if(!locked()){
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      `
+      <div class="actions">
+
+        <button
+          class="btn primary"
+          id="saveAll"
+        >
+          Spremi prognoze
+        </button>
+
+      </div>
+      `
+    );
+
+  }
+
+
+  box
+    .querySelectorAll(".ob")
+    .forEach(b=>{
+
+      b.onclick=()=>{
+
+        b.parentElement
+          .querySelectorAll(".ob")
+          .forEach(x=>
+            x.classList.remove("sel")
+          );
+
+        b.classList.add("sel");
+
+      };
+
+    });
+
+
+  document
+    .getElementById("saveAll")
+    ?.addEventListener(
+      "click",
+      savePredictions
+    );
+
 }
+
+
+/* =========================================
+   SPREMANJE PROGNOZA
+========================================= */
 
 async function savePredictions(){
-  if(locked()){toast("Kolo je zaključano.");return}
+
+  if(locked()){
+
+    toast(
+      "Kolo je zaključano."
+    );
+
+    return;
+
+  }
+
+
   const rows=[];
-  document.querySelectorAll(".match").forEach(el=>{
-    const mid=el.dataset.mid;
-    const h=el.querySelector(".ph").value,a=el.querySelector(".pa").value;
-    const ob=el.querySelector(".ob.sel");
-    if(h!==""&&a!==""&&ob)rows.push({
-      user_id:user.id,match_id:mid,
-      predicted_home_score:Number(h),predicted_away_score:Number(a),
-      predicted_outcome:ob.dataset.o
+
+
+  document
+    .querySelectorAll(".match")
+    .forEach(el=>{
+
+      const h=
+        el.querySelector(".ph").value;
+
+
+      const a=
+        el.querySelector(".pa").value;
+
+
+      const ob=
+        el.querySelector(".ob.sel");
+
+
+      if(
+        h!=="" &&
+        a!=="" &&
+        ob
+      ){
+
+        rows.push({
+
+          user_id:user.id,
+
+          match_id:el.dataset.mid,
+
+          predicted_home_score:
+            Number(h),
+
+          predicted_away_score:
+            Number(a),
+
+          predicted_outcome:
+            ob.dataset.o
+
+        });
+
+      }
+
     });
-  });
-  if(!rows.length){toast("Unesi barem jednu kompletnu prognozu.");return}
-  const {error}=await supabase.from("predictions").upsert(rows,{onConflict:"user_id,match_id"});
-  if(error){toast(error.message);return}
-  await loadData();toast("Prognoze su spremljene.");showPredictions();
+
+
+  if(!rows.length){
+
+    toast(
+      "Unesi barem jednu kompletnu prognozu."
+    );
+
+    return;
+
+  }
+
+
+  const {error}=
+    await supabase
+      .from("predictions")
+      .upsert(
+        rows,
+        {
+          onConflict:
+            "user_id,match_id"
+        }
+      );
+
+
+  if(error){
+
+    toast(error.message);
+
+    return;
+
+  }
+
+
+  await loadData();
+
+
+  toast(
+    "Prognoze su spremljene."
+  );
+
+
+  showPredictions();
+
 }
+
+
+/* =========================================
+   REZULTATI
+========================================= */
 
 function showResults(){
-  const c=document.getElementById("content");
-  if(!round){c.innerHTML='<div class="card"><h2>Nema aktivnog kola</h2></div>';return}
-  c.innerHTML=`<div class="card"><h2>Rezultati — ${round.round_number}. kolo</h2>
-  <p class="muted">${locked()?"Nakon zaključavanja vide se prognoze igrača.":"Prije zaključavanja vidiš samo svoje prognoze."}</p>
-  <div id="res"></div></div>`;
-  const box=document.getElementById("res");
+
+  const c=
+    document.getElementById("content");
+
+
+  if(!round){
+
+    c.innerHTML=`
+      <div class="card">
+        <h2>Nema aktivnog kola</h2>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  c.innerHTML=`
+
+  <div class="card">
+
+    <h2>
+      Rezultati —
+      ${round.round_number}. kolo
+    </h2>
+
+    <p class="muted">
+
+      ${
+        locked()
+        ?"🔓 Kolo je zaključano — sada svi igrači vide sve prognoze."
+        :"🔒 Prije zaključavanja vidiš samo svoje prognoze."
+      }
+
+    </p>
+
+    <div id="res"></div>
+
+  </div>
+
+  `;
+
+
+  const box=
+    document.getElementById("res");
+
+
   matches.forEach(m=>{
-    const own=predictions[m.id];
-    const actual=m.actual_home_score!=null&&m.actual_away_score!=null?`${m.actual_home_score}:${m.actual_away_score}`:"—";
-    box.insertAdjacentHTML("beforeend",`
+
+    const actual=
+      m.actual_home_score!=null &&
+      m.actual_away_score!=null
+
+      ?`${m.actual_home_score}:${m.actual_away_score}`
+
+      :"—";
+
+
+    let html=`
+
       <div class="match">
-        <div class="team">${esc(m.home_team)} – ${esc(m.away_team)}</div>
-        <div class="center"><b>${actual}</b></div>
-        <div class="right">${own?`Moja prognoza: <b>${own.predicted_home_score}:${own.predicted_away_score}</b> · ${esc(own.predicted_outcome||"")} · <b>${own.points??0} bod.</b>`:"Nema prognoze"}</div>
-      </div>`);
+
+        <div class="team">
+
+          ${esc(m.home_team)}
+          –
+          ${esc(m.away_team)}
+
+        </div>
+
+
+        <div class="center">
+
+          <b>
+            Stvarni:
+            ${actual}
+          </b>
+
+        </div>
+
+
+        <div class="right">
+
+          <div class="pred-list">
+
+    `;
+
+
+    const visible=
+      predictions.filter(
+        p=>p.match_id===m.id
+      );
+
+
+    const list=
+      locked()
+
+      ?visible
+
+      :visible.filter(
+        p=>p.user_id===user.id
+      );
+
+
+    if(list.length){
+
+      list.forEach(p=>{
+
+        html+=`
+
+          <div class="pred-row">
+
+            <b>
+              ${esc(nameById(p.user_id))}
+            </b>:
+
+            ${p.predicted_home_score}
+            :
+            ${p.predicted_away_score}
+
+            · ishod
+            ${esc(
+              p.predicted_outcome||"-"
+            )}
+
+            ·
+
+            <b>
+              ${p.points??0} bod.
+            </b>
+
+          </div>
+
+        `;
+
+      });
+
+    }
+    else{
+
+      html+=`
+        <div class="muted">
+          Nema prognoza.
+        </div>
+      `;
+
+    }
+
+
+    html+=`
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      html
+    );
+
   });
+
 }
+
+
+/* =========================================
+   POREDAK
+========================================= */
 
 async function showTable(){
-  const c=document.getElementById("content");
-  c.innerHTML='<div class="card"><h2>Poredak</h2><p class="muted">Učitavanje...</p></div>';
-  const [ps,sp,preds]=await Promise.all([
-    supabase.from("profiles").select("id,name"),
-    supabase.from("starting_points").select("*"),
-    supabase.from("predictions").select("user_id,points")
-  ]);
-  if(ps.error){c.innerHTML=`<div class="card"><p class="danger">${esc(ps.error.message)}</p></div>`;return}
+
+  const c=
+    document.getElementById("content");
+
+
+  c.innerHTML=`
+    <div class="card">
+      <h2>Poredak</h2>
+      <p class="muted">
+        Učitavanje...
+      </p>
+    </div>
+  `;
+
+
+  const [
+    ps,
+    sp,
+    preds
+  ]=
+    await Promise.all([
+
+      supabase
+        .from("profiles")
+        .select("id,name"),
+
+      supabase
+        .from("starting_points")
+        .select("*"),
+
+      supabase
+        .from("predictions")
+        .select(
+          "user_id,points"
+        )
+
+    ]);
+
+
+  if(ps.error){
+
+    c.innerHTML=`
+      <div class="card">
+        <p class="danger">
+          ${esc(ps.error.message)}
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
   const startBy={};
-  (sp.data||[]).forEach(x=>{
-    const name=x.name||x.player_name;
-    if(name!=null)startBy[name]=Number(x.points??x.starting_points??0);
-  });
-  const pts={};
-  (preds.data||[]).forEach(x=>pts[x.user_id]=(pts[x.user_id]||0)+Number(x.points||0));
-  const rows=(ps.data||[]).map(p=>({
-    name:p.name,start:startBy[p.name]??START[p.name]??0,earned:pts[p.id]||0
-  })).map(x=>({...x,total:x.start+x.earned})).sort((a,b)=>b.total-a.total);
-  c.innerHTML=`<div class="card"><h2>Ukupni poredak</h2>
-  <table><thead><tr><th>#</th><th>Igrač</th><th>Početni</th><th>Nova</th><th>Ukupno</th></tr></thead><tbody>
-  ${rows.map((x,i)=>`<tr><td>${i+1}</td><td><b>${esc(x.name)}</b></td><td>${x.start}</td><td>${x.earned}</td><td><b>${x.total}</b></td></tr>`).join("")}
-  </tbody></table></div>`;
+
+
+  (sp.data||[])
+    .forEach(x=>{
+
+      const name=
+        x.name ||
+        x.player_name;
+
+
+      if(name!=null){
+
+        startBy[name]=
+          Number(
+            x.points ??
+            x.starting_points ??
+            0
+          );
+
+      }
+
+    });
+
+
+  const earned={};
+
+
+  (preds.data||[])
+    .forEach(x=>{
+
+      earned[x.user_id]=
+        (earned[x.user_id]||0)+
+        Number(x.points||0);
+
+    });
+
+
+  const rows=
+    (ps.data||[])
+      .map(p=>{
+
+        const start=
+          startBy[p.name] ??
+          START[p.name] ??
+          0;
+
+
+        const nova=
+          earned[p.id]||0;
+
+
+        return {
+
+          name:p.name,
+
+          start,
+
+          nova,
+
+          total:start+nova
+
+        };
+
+      })
+
+
+      .sort(
+        (a,b)=>
+          b.total-a.total
+      );
+
+
+  c.innerHTML=`
+
+  <div class="card">
+
+    <h2>
+      Ukupni poredak
+    </h2>
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>#</th>
+
+          <th>Igrač</th>
+
+          <th>Početni</th>
+
+          <th>Nova</th>
+
+          <th>Ukupno</th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        ${
+          rows
+            .map(
+              (x,i)=>`
+
+              <tr>
+
+                <td>
+                  ${i+1}
+                </td>
+
+                <td>
+                  <b>
+                    ${esc(x.name)}
+                  </b>
+                </td>
+
+                <td>
+                  ${x.start}
+                </td>
+
+                <td>
+                  ${x.nova}
+                </td>
+
+                <td>
+                  <b>
+                    ${x.total}
+                  </b>
+                </td>
+
+              </tr>
+
+            `
+            )
+            .join("")
+        }
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  `;
+
 }
+
+
+/* =========================================
+   ADMIN
+========================================= */
 
 function showAdmin(){
-  if(!profile?.is_admin){currentPage="predictions";render();return}
-  const c=document.getElementById("content");
-  if(!round){c.innerHTML='<div class="card"><h2>Admin</h2><p>Nema aktivnog kola.</p></div>';return}
-  c.innerHTML=`<div class="card"><h2>Admin — ${round.round_number}. kolo</h2>
-  <p class="muted">Unesi stvarne rezultate. Nakon obračuna kolo se završava.</p><div id="adminMatches"></div>
-  <div class="actions"><button class="btn primary" id="finish">Obračunaj i završi kolo</button></div></div>`;
-  const box=document.getElementById("adminMatches");
-  matches.forEach(m=>box.insertAdjacentHTML("beforeend",`
-    <div class="match" data-mid="${m.id}">
-      <div class="team">${esc(m.home_team)} – ${esc(m.away_team)}</div>
-      <div class="score"><input class="ah" type="number" min="0" max="30" value="${m.actual_home_score??""}"><span>:</span><input class="aa" type="number" min="0" max="30" value="${m.actual_away_score??""}"></div>
-      <div class="right">${fmtDate(m.kickoff_at)}</div>
-    </div>`));
-  document.getElementById("finish").onclick=finishRound;
+
+  if(!profile?.is_admin){
+
+    currentPage="predictions";
+
+    render();
+
+    return;
+
+  }
+
+
+  const c=
+    document.getElementById("content");
+
+
+  if(!round){
+
+    c.innerHTML=`
+      <div class="card">
+        <h2>Admin</h2>
+        <p>
+          Nema aktivnog kola.
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  c.innerHTML=`
+
+  <div class="card">
+
+    <h2>
+      Admin —
+      ${round.round_number}. kolo
+    </h2>
+
+    <p class="muted">
+      Unesi stvarne rezultate.
+      Nakon obračuna kolo se završava.
+    </p>
+
+    <div id="adminMatches"></div>
+
+    <div class="actions">
+
+      <button
+        class="btn primary"
+        id="finish"
+      >
+        Obračunaj i završi kolo
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+
+  const box=
+    document.getElementById(
+      "adminMatches"
+    );
+
+
+  matches.forEach(m=>
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div
+        class="match"
+        data-mid="${m.id}"
+      >
+
+        <div class="team">
+
+          ${esc(m.home_team)}
+          –
+          ${esc(m.away_team)}
+
+        </div>
+
+
+        <div class="score">
+
+          <input
+            class="ah"
+            type="number"
+            min="0"
+            max="30"
+            value="${m.actual_home_score??""}"
+          >
+
+          <span>:</span>
+
+          <input
+            class="aa"
+            type="number"
+            min="0"
+            max="30"
+            value="${m.actual_away_score??""}"
+          >
+
+        </div>
+
+
+        <div class="right">
+
+          ${fmtDate(m.kickoff_at)}
+
+        </div>
+
+      </div>
+
+      `
+    )
+
+  );
+
+
+  document
+    .getElementById("finish")
+    .onclick=finishRound;
+
 }
+
+
+/* =========================================
+   ZAVRŠAVANJE KOLA
+========================================= */
 
 async function finishRound(){
+
   const updates=[];
-  document.querySelectorAll("#adminMatches .match").forEach(el=>{
-    const h=el.querySelector(".ah").value,a=el.querySelector(".aa").value;
-    if(h!==""&&a!=="")updates.push({id:el.dataset.mid,actual_home_score:Number(h),actual_away_score:Number(a)});
-  });
-  if(updates.length!==matches.length){toast("Unesi rezultat svih 5 utakmica.");return}
-  for(const x of updates){
-    const {error}=await supabase.from("matches").update({
-      actual_home_score:x.actual_home_score,actual_away_score:x.actual_away_score
-    }).eq("id",x.id);
-    if(error){toast(error.message);return}
+
+
+  document
+    .querySelectorAll(
+      "#adminMatches .match"
+    )
+    .forEach(el=>{
+
+      const h=
+        el.querySelector(".ah").value;
+
+
+      const a=
+        el.querySelector(".aa").value;
+
+
+      if(
+        h!=="" &&
+        a!==""
+      ){
+
+        updates.push({
+
+          id:el.dataset.mid,
+
+          actual_home_score:
+            Number(h),
+
+          actual_away_score:
+            Number(a)
+
+        });
+
+      }
+
+    });
+
+
+  if(
+    updates.length!==matches.length
+  ){
+
+    toast(
+      "Unesi rezultat svih 5 utakmica."
+    );
+
+    return;
+
   }
-  const {error}=await supabase.rpc("finish_round",{p_round_id:round.id});
-  if(error){toast("Rezultati su spremljeni, ali obračun nije uspio: "+error.message);return}
-  toast("Kolo je obračunato i završeno.");
-  await loadData();currentPage="results";render();
+
+
+  for(const x of updates){
+
+    const {error}=
+      await supabase
+        .from("matches")
+        .update({
+
+          actual_home_score:
+            x.actual_home_score,
+
+          actual_away_score:
+            x.actual_away_score
+
+        })
+        .eq(
+          "id",
+          x.id
+        );
+
+
+    if(error){
+
+      toast(error.message);
+
+      return;
+
+    }
+
+  }
+
+
+  const {error}=
+    await supabase.rpc(
+      "finish_round",
+      {
+        p_round_id:round.id
+      }
+    );
+
+
+  if(error){
+
+    toast(
+      "Rezultati su spremljeni, ali obračun nije uspio: "+
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  toast(
+    "Kolo je obračunato i završeno."
+  );
+
+
+  await loadData();
+
+
+  currentPage="results";
+
+
+  render();
+
 }
 
+
+/* =========================================
+   POKRETANJE
+========================================= */
+
 async function boot(){
+
   try{
-    const {data}=await supabase.auth.getSession();
-    if(data.session)await start(data.session.user); else loginView();
-  }catch(e){
-    console.error(e);
-    loginView("Aplikacija se nije mogla pokrenuti. Provjeri Supabase vezu.");
+
+    const {data}=
+      await supabase.auth.getSession();
+
+
+    if(data.session){
+
+      await start(
+        data.session.user
+      );
+
+    }
+    else{
+
+      loginView();
+
+    }
+
   }
+  catch(e){
+
+    console.error(e);
+
+    loginView(
+      "Aplikacija se nije mogla pokrenuti. Provjeri Supabase vezu."
+    );
+
+  }
+
 }
-supabase.auth.onAuthStateChange((_event,session)=>{
-  if(!session&&!user)loginView();
-});
+
+
+supabase.auth.onAuthStateChange(
+  (_event,session)=>{
+
+    if(!session&&!user)
+      loginView();
+
+  }
+);
+
+
 boot();
+
 </script>
+
 </body>
 </html>
