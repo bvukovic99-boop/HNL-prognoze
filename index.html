@@ -1519,29 +1519,104 @@ function showAdmin(){
             value="${m.actual_away_score??""}"
           >
 
-        </div>
+function showAdmin(){
+  if(!profile?.is_admin){
+    currentPage="predictions";
+    render();
+    return;
+  }
 
+  const c=document.getElementById("content");
 
-        <div class="right">
+  if(!round){
+    c.innerHTML='<div class="card"><h2>Admin</h2><p>Nema aktivnog kola.</p></div>';
+    return;
+  }
 
-          ${fmtDate(m.kickoff_at)}
+  c.innerHTML=`
+  <div class="card">
+    <h2>Admin — ${round.round_number}. kolo</h2>
+    <p class="muted">Unesi stvarne rezultate. Nakon obračuna kolo se završava.</p>
 
-        </div>
+    <div id="adminMatches"></div>
 
+    <div class="actions">
+      <button class="btn primary" id="finish">
+        Obračunaj i završi kolo
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Reset lozinke igrača</h2>
+
+    <label>Igrač</label>
+    <select id="resetPlayer">
+      ${profiles
+        .filter(p=>p.id!==user.id)
+        .map(p=>`
+          <option value="${p.id}">
+            ${esc(p.name)}
+          </option>
+        `).join("")}
+    </select>
+
+    <label>Privremena lozinka</label>
+    <input
+      id="temporaryPassword"
+      type="text"
+      placeholder="npr. HNL2026!"
+    >
+
+    <div class="actions">
+      <button class="btn primary" id="resetPassword">
+        Resetiraj lozinku
+      </button>
+    </div>
+
+    <p id="resetMessage" class="muted"></p>
+  </div>
+  `;
+
+  const box=document.getElementById("adminMatches");
+
+  matches.forEach(m=>box.insertAdjacentHTML("beforeend",`
+    <div class="match" data-mid="${m.id}">
+      <div class="team">
+        ${esc(m.home_team)} – ${esc(m.away_team)}
       </div>
 
-      `
-    )
+      <div class="score">
+        <input
+          class="ah"
+          type="number"
+          min="0"
+          max="30"
+          value="${m.actual_home_score??""}"
+        >
 
-  );
+        <span>:</span>
 
+        <input
+          class="aa"
+          type="number"
+          min="0"
+          max="30"
+          value="${m.actual_away_score??""}"
+        >
+      </div>
 
-  document
-    .getElementById("finish")
-    .onclick=finishRound;
+      <div class="right">
+        ${fmtDate(m.kickoff_at)}
+      </div>
+    </div>
+  `));
 
+  document.getElementById("finish").onclick=finishRound;
+
+  document.getElementById("resetPassword").onclick=
+    adminResetPassword;
 }
-
 
 /* =========================================
    ZAVRŠAVANJE KOLA
