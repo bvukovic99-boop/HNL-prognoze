@@ -55,6 +55,11 @@ button{
   cursor:pointer
 }
 
+button:disabled{
+  cursor:not-allowed;
+  opacity:.6
+}
+
 .nav button{
   border:0;
   border-radius:9px;
@@ -105,6 +110,10 @@ h1,h2,h3{
 
 .danger{
   color:#b42318
+}
+
+.success{
+  color:#067647
 }
 
 label{
@@ -235,6 +244,25 @@ th{
   border-top:1px solid #f0f2f5
 }
 
+.admin-match{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  background:#fafbfc
+}
+
+.admin-match-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.admin-match-title{
+  font-weight:800;
+  margin-bottom:8px
+}
+
 .toast{
   position:fixed;
   right:14px;
@@ -245,6 +273,13 @@ th{
   border-radius:10px;
   z-index:20;
   max-width:340px
+}
+
+.info-box{
+  padding:12px;
+  border-radius:10px;
+  background:#f1f4f8;
+  margin-bottom:12px
 }
 
 @media(max-width:700px){
@@ -263,6 +298,10 @@ th{
 
   .center{
     text-align:left
+  }
+
+  .admin-match-grid{
+    grid-template-columns:1fr
   }
 }
 </style>
@@ -380,6 +419,76 @@ function fmtDate(s){
       minute:"2-digit"
     }
   );
+
+}
+
+
+function inputDate(s){
+
+  if(!s)return "";
+
+  const d=new Date(s);
+
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+
+  return `${y}-${m}-${day}`;
+
+}
+
+
+function inputTime(s){
+
+  if(!s)return "";
+
+  const d=new Date(s);
+
+  const h=String(d.getHours()).padStart(2,"0");
+  const m=String(d.getMinutes()).padStart(2,"0");
+
+  return `${h}:${m}`;
+
+}
+
+
+function toISO(date,time){
+
+  if(!date||!time)
+    return null;
+
+  const d=
+    new Date(
+      `${date}T${time}:00`
+    );
+
+  if(Number.isNaN(d.getTime()))
+    return null;
+
+  return d.toISOString();
+
+}
+
+
+function lockFromKickoffs(items){
+
+  const times=
+    items
+      .map(x=>new Date(x))
+      .filter(x=>!Number.isNaN(x.getTime()));
+
+  if(!times.length)
+    return null;
+
+  const earliest=
+    Math.min(
+      ...times.map(x=>x.getTime())
+    );
+
+  return new Date(
+    earliest-
+    2*60*60*1000
+  ).toISOString();
 
 }
 
@@ -587,23 +696,36 @@ async function start(u){
 async function loadData(){
 
   /*
-     Uzimamo najnovije kolo.
+    Admin vidi najnovije kolo.
+    Igrač vidi najnovije OBJAVLJENO kolo.
 
-     Time se nakon završetka kola mogu
-     prikazivati rezultati i prognoze
-     upravo završenog kola.
+    Neobjavljeno kolo je vidljivo samo adminu.
   */
 
-  const r=
-    await supabase
+  let query=
+    supabase
       .from("rounds")
       .select("*")
       .order(
         "round_number",
         {ascending:false}
       )
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+
+
+  if(!profile?.is_admin){
+
+    query=
+      query.eq(
+        "is_published",
+        true
+      );
+
+  }
+
+
+  const r=
+    await query.maybeSingle();
 
 
   if(r.error)
@@ -647,11 +769,6 @@ async function loadData(){
 
   matches=m.data||[];
 
-
-  /*
-     RLS u Supabaseu odlučuje
-     koje prognoze korisnik smije vidjeti.
-  */
 
   const p=
     await supabase
@@ -976,7 +1093,10 @@ function showPredictions(){
 
     c.innerHTML=`
       <div class="card">
-        <h2>Nema kola</h2>
+        <h2>Nema objavljenog kola</h2>
+        <p class="muted">
+          Admin još nije objavio novo kolo.
+        </p>
       </div>
     `;
 
@@ -1009,8 +1129,11 @@ function showPredictions(){
         :"🟢 Prognoze su otvorene."
       }
 
-      Zaključavanje:
-      ${fmtDate(round.locked_at)}
+      ${
+        round.locked_at
+        ?`Zaključavanje: ${fmtDate(round.locked_at)}`
+        :""
+      }
 
     </p>
 
@@ -1027,6 +1150,19 @@ function showPredictions(){
 
   const box=
     document.getElementById("matches");
+
+
+  if(!matches.length){
+
+    box.innerHTML=`
+      <p class="muted">
+        Za ovo kolo još nema utakmica.
+      </p>
+    `;
+
+    return;
+
+  }
 
 
   matches.forEach(m=>{
@@ -1345,6 +1481,19 @@ function showResults(){
 
   const box=
     document.getElementById("res");
+
+
+  if(!matches.length){
+
+    box.innerHTML=`
+      <p class="muted">
+        Nema utakmica.
+      </p>
+    `;
+
+    return;
+
+  }
 
 
   matches.forEach(m=>{
@@ -1726,13 +1875,7 @@ function showAdmin(){
 
   if(!round){
 
-    c.innerHTML=`
-      <div class="card">
-        <h2>Admin</h2>
-        <p>Nema kola.</p>
-      </div>
-    `;
-
+    showNewRoundForm();
     return;
 
   }
@@ -1750,12 +1893,31 @@ function showAdmin(){
       <div class="card">
 
         <h2>
-          Admin — ${round.round_number}. kolo
+          Admin
         </h2>
 
-        <p class="muted">
-          Ovo kolo je već završeno.
-        </p>
+        <div class="info-box">
+
+          <b>
+            ${round.round_number}. kolo je završeno.
+          </b>
+
+          <p class="muted">
+            Sada možeš napraviti novo kolo.
+          </p>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="btn primary"
+            id="newRound"
+          >
+            + Novo kolo
+          </button>
+
+        </div>
 
       </div>
     `
@@ -1768,11 +1930,62 @@ function showAdmin(){
         </h2>
 
         <p class="muted">
+
+          ${
+            round.is_published
+            ?"🟢 Kolo je objavljeno igračima."
+            :"🟡 Kolo nije objavljeno igračima."
+          }
+
+          ${
+            locked()
+            ?" 🔒 Kolo je zaključano."
+            :""
+          }
+
+        </p>
+
+        <div id="adminSchedule"></div>
+
+        ${
+          !locked()
+          ?`
+            <div class="actions">
+
+              <button
+                class="btn"
+                id="addMatch"
+              >
+                + Dodaj utakmicu
+              </button>
+
+              <button
+                class="btn primary"
+                id="saveSchedule"
+              >
+                Spremi raspored
+              </button>
+
+            </div>
+          `
+          :""
+        }
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>
+          Stvarni rezultati
+        </h2>
+
+        <p class="muted">
           Unesi stvarne rezultate.
           Nakon obračuna kolo se završava.
         </p>
 
-        <div id="adminMatches"></div>
+        <div id="adminResults"></div>
 
         <div class="actions">
 
@@ -1860,72 +2073,42 @@ function showAdmin(){
 
   if(!finished){
 
-    const box=
-      document.getElementById(
-        "adminMatches"
+    renderAdminSchedule();
+    renderAdminResults();
+
+
+    document
+      .getElementById("addMatch")
+      ?.addEventListener(
+        "click",
+        addAdminMatch
       );
 
 
-    matches.forEach(m=>
-
-      box.insertAdjacentHTML(
-        "beforeend",
-        `
-
-        <div
-          class="match"
-          data-mid="${m.id}"
-        >
-
-          <div class="team">
-
-            ${esc(m.home_team)}
-            –
-            ${esc(m.away_team)}
-
-          </div>
-
-
-          <div class="score">
-
-            <input
-              class="ah"
-              type="number"
-              min="0"
-              max="30"
-              value="${m.actual_home_score??""}"
-            >
-
-            <span>:</span>
-
-            <input
-              class="aa"
-              type="number"
-              min="0"
-              max="30"
-              value="${m.actual_away_score??""}"
-            >
-
-          </div>
-
-
-          <div class="right">
-
-            ${fmtDate(m.kickoff_at)}
-
-          </div>
-
-        </div>
-
-        `
-      )
-
-    );
+    document
+      .getElementById("saveSchedule")
+      ?.addEventListener(
+        "click",
+        saveAdminSchedule
+      );
 
 
     document
       .getElementById("finish")
-      .onclick=finishRound;
+      ?.addEventListener(
+        "click",
+        finishRound
+      );
+
+  }
+  else{
+
+    document
+      .getElementById("newRound")
+      ?.addEventListener(
+        "click",
+        showNewRoundForm
+      );
 
   }
 
@@ -1933,6 +2116,1099 @@ function showAdmin(){
   document
     .getElementById("resetPassword")
     .onclick=adminResetPassword;
+
+}
+
+
+/* =========================================
+   ADMIN — RASPORED
+========================================= */
+
+function renderAdminSchedule(){
+
+  const box=
+    document.getElementById(
+      "adminSchedule"
+    );
+
+
+  if(!box)
+    return;
+
+
+  box.innerHTML="";
+
+
+  if(!matches.length){
+
+    box.innerHTML=`
+      <p class="muted">
+        Još nema utakmica.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  matches.forEach(m=>{
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div
+        class="admin-match"
+        data-mid="${m.id}"
+      >
+
+        <div class="admin-match-title">
+          Utakmica
+        </div>
+
+        <div class="admin-match-grid">
+
+          <div>
+
+            <label>
+              Domaćin
+            </label>
+
+            <input
+              class="homeTeam"
+              value="${esc(m.home_team)}"
+            >
+
+          </div>
+
+
+          <div>
+
+            <label>
+              Gost
+            </label>
+
+            <input
+              class="awayTeam"
+              value="${esc(m.away_team)}"
+            >
+
+          </div>
+
+
+          <div>
+
+            <label>
+              Datum
+            </label>
+
+            <input
+              class="matchDate"
+              type="date"
+              value="${inputDate(m.kickoff_at)}"
+            >
+
+          </div>
+
+
+          <div>
+
+            <label>
+              Vrijeme
+            </label>
+
+            <input
+              class="matchTime"
+              type="time"
+              value="${inputTime(m.kickoff_at)}"
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+      `
+    );
+
+  });
+
+}
+
+
+/* =========================================
+   ADMIN — DODAJ UTAKMICU
+========================================= */
+
+function addAdminMatch(){
+
+  const box=
+    document.getElementById(
+      "adminSchedule"
+    );
+
+
+  if(!box)
+    return;
+
+
+  const tempId=
+    "new-"+Date.now();
+
+
+  box.insertAdjacentHTML(
+    "beforeend",
+    `
+
+    <div
+      class="admin-match"
+      data-new="true"
+      data-tempid="${tempId}"
+    >
+
+      <div class="admin-match-title">
+        Nova utakmica
+      </div>
+
+      <div class="admin-match-grid">
+
+        <div>
+
+          <label>
+            Domaćin
+          </label>
+
+          <input
+            class="homeTeam"
+            placeholder="npr. Dinamo"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Gost
+          </label>
+
+          <input
+            class="awayTeam"
+            placeholder="npr. Hajduk"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Datum
+          </label>
+
+          <input
+            class="matchDate"
+            type="date"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Vrijeme
+          </label>
+
+          <input
+            class="matchTime"
+            type="time"
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+    `
+  );
+
+}
+
+
+/* =========================================
+   ADMIN — SPREMI RASPORED
+========================================= */
+
+async function saveAdminSchedule(){
+
+  if(!profile?.is_admin){
+
+    toast(
+      "Samo administrator može uređivati raspored."
+    );
+
+    return;
+
+  }
+
+
+  if(!round||round.is_finished){
+
+    toast(
+      "Kolo je završeno."
+    );
+
+    return;
+
+  }
+
+
+  if(locked()){
+
+    toast(
+      "Kolo je već zaključano."
+    );
+
+    return;
+
+  }
+
+
+  const rows=
+    Array.from(
+      document.querySelectorAll(
+        "#adminSchedule .admin-match"
+      )
+    );
+
+
+  if(!rows.length){
+
+    toast(
+      "Dodaj barem jednu utakmicu."
+    );
+
+    return;
+
+  }
+
+
+  const data=[];
+
+
+  for(const row of rows){
+
+    const home=
+      row
+        .querySelector(".homeTeam")
+        .value
+        .trim();
+
+
+    const away=
+      row
+        .querySelector(".awayTeam")
+        .value
+        .trim();
+
+
+    const date=
+      row
+        .querySelector(".matchDate")
+        .value;
+
+
+    const time=
+      row
+        .querySelector(".matchTime")
+        .value;
+
+
+    if(!home||!away||!date||!time){
+
+      toast(
+        "Svaka utakmica mora imati domaćina, gosta, datum i vrijeme."
+      );
+
+      return;
+
+    }
+
+
+    if(home===away){
+
+      toast(
+        "Domaćin i gost ne mogu biti isti."
+      );
+
+      return;
+
+    }
+
+
+    const kickoff=
+      toISO(date,time);
+
+
+    if(!kickoff){
+
+      toast(
+        "Jedan od unesenih termina nije ispravan."
+      );
+
+      return;
+
+    }
+
+
+    data.push({
+      row,
+      home,
+      away,
+      kickoff
+    });
+
+  }
+
+
+  const existingIds=
+    new Set(
+      matches.map(m=>String(m.id))
+    );
+
+
+  /*
+    Prvo spremamo postojeće utakmice.
+  */
+
+  for(const item of data){
+
+    const id=
+      item.row.dataset.mid;
+
+
+    if(id){
+
+      const {error}=
+        await supabase
+          .from("matches")
+          .update({
+
+            home_team:item.home,
+
+            away_team:item.away,
+
+            kickoff_at:item.kickoff,
+
+            schedule_source:
+              "admin",
+
+            schedule_updated_at:
+              new Date().toISOString()
+
+          })
+          .eq(
+            "id",
+            id
+          );
+
+
+      if(error){
+
+        toast(error.message);
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+  /*
+    Zatim dodajemo nove utakmice.
+  */
+
+  for(const item of data){
+
+    if(item.row.dataset.new!=="true")
+      continue;
+
+
+    const {error}=
+      await supabase
+        .from("matches")
+        .insert({
+
+          round_id:round.id,
+
+          home_team:item.home,
+
+          away_team:item.away,
+
+          kickoff_at:item.kickoff,
+
+          schedule_source:
+            "admin",
+
+          schedule_updated_at:
+            new Date().toISOString()
+
+        });
+
+
+    if(error){
+
+      toast(error.message);
+
+      return;
+
+    }
+
+  }
+
+
+  /*
+    Zaključavanje se automatski računa
+    2 sata prije prve utakmice.
+
+    Ako admin promijeni termin prve utakmice,
+    prije zaključavanja se pomiče i vrijeme
+    zaključavanja.
+  */
+
+  const newKickoffs=
+    data.map(x=>x.kickoff);
+
+
+  const newLockedAt=
+    lockFromKickoffs(
+      newKickoffs
+    );
+
+
+  if(newLockedAt){
+
+    const {error}=
+      await supabase
+        .from("rounds")
+        .update({
+          locked_at:newLockedAt
+        })
+        .eq(
+          "id",
+          round.id
+        );
+
+
+    if(error){
+
+      toast(error.message);
+
+      return;
+
+    }
+
+  }
+
+
+  await loadData();
+
+
+  toast(
+    "Raspored je spremljen."
+  );
+
+
+  showAdmin();
+
+}
+
+
+/* =========================================
+   ADMIN — REZULTATI
+========================================= */
+
+function renderAdminResults(){
+
+  const box=
+    document.getElementById(
+      "adminResults"
+    );
+
+
+  if(!box)
+    return;
+
+
+  box.innerHTML="";
+
+
+  matches.forEach(m=>{
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div
+        class="match"
+        data-mid="${m.id}"
+      >
+
+        <div class="team">
+
+          ${esc(m.home_team)}
+          –
+          ${esc(m.away_team)}
+
+        </div>
+
+
+        <div class="score">
+
+          <input
+            class="ah"
+            type="number"
+            min="0"
+            max="30"
+            value="${m.actual_home_score??""}"
+          >
+
+          <span>:</span>
+
+          <input
+            class="aa"
+            type="number"
+            min="0"
+            max="30"
+            value="${m.actual_away_score??""}"
+          >
+
+        </div>
+
+
+        <div class="right">
+
+          ${fmtDate(m.kickoff_at)}
+
+        </div>
+
+      </div>
+
+      `
+    );
+
+  });
+
+}
+
+
+/* =========================================
+   ADMIN — NOVO KOLO
+========================================= */
+
+function showNewRoundForm(){
+
+  const c=
+    document.getElementById("content");
+
+
+  c.innerHTML=`
+
+  <div class="card">
+
+    <h2>
+      Novo kolo
+    </h2>
+
+    <p class="muted">
+      Unesi broj novog kola i dodaj
+      koliko god utakmica želiš.
+      Kolo će biti vidljivo igračima
+      tek nakon uspješnog spremanja.
+    </p>
+
+    <label>
+      Broj kola
+    </label>
+
+    <input
+      id="newRoundNumber"
+      type="number"
+      min="1"
+      max="100"
+      placeholder="npr. 7"
+    >
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      Utakmice
+    </h3>
+
+    <div id="newRoundMatches"></div>
+
+    <div class="actions">
+
+      <button
+        class="btn"
+        id="addNewMatch"
+      >
+        + Dodaj utakmicu
+      </button>
+
+      <button
+        class="btn primary"
+        id="createRound"
+      >
+        Spremi i objavi kolo
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+
+  document
+    .getElementById("addNewMatch")
+    .onclick=addNewRoundMatch;
+
+
+  document
+    .getElementById("createRound")
+    .onclick=createRound;
+
+
+  /*
+    Odmah dodajemo jedan prazan red.
+  */
+
+  addNewRoundMatch();
+
+}
+
+
+/* =========================================
+   ADMIN — DODAJ UTAKMICU U NOVO KOLO
+========================================= */
+
+function addNewRoundMatch(){
+
+  const box=
+    document.getElementById(
+      "newRoundMatches"
+    );
+
+
+  if(!box)
+    return;
+
+
+  box.insertAdjacentHTML(
+    "beforeend",
+    `
+
+    <div
+      class="admin-match new-round-row"
+    >
+
+      <div class="admin-match-title">
+        Utakmica
+      </div>
+
+      <div class="admin-match-grid">
+
+        <div>
+
+          <label>
+            Domaćin
+          </label>
+
+          <input
+            class="newHome"
+            placeholder="npr. Dinamo"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Gost
+          </label>
+
+          <input
+            class="newAway"
+            placeholder="npr. Hajduk"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Datum
+          </label>
+
+          <input
+            class="newDate"
+            type="date"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Vrijeme
+          </label>
+
+          <input
+            class="newTime"
+            type="time"
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+    `
+  );
+
+}
+
+
+/* =========================================
+   ADMIN — KREIRAJ NOVO KOLO
+========================================= */
+
+async function createRound(){
+
+  if(!profile?.is_admin){
+
+    toast(
+      "Samo administrator može napraviti novo kolo."
+    );
+
+    return;
+
+  }
+
+
+  const numberValue=
+    document
+      .getElementById(
+        "newRoundNumber"
+      )
+      .value
+      .trim();
+
+
+  const roundNumber=
+    Number(numberValue);
+
+
+  if(
+    !numberValue ||
+    !Number.isInteger(roundNumber) ||
+    roundNumber<1
+  ){
+
+    toast(
+      "Unesi ispravan broj kola."
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Provjera postoji li već to kolo.
+  */
+
+  const existing=
+    await supabase
+      .from("rounds")
+      .select("id,round_number")
+      .eq(
+        "round_number",
+        roundNumber
+      )
+      .maybeSingle();
+
+
+  if(existing.error){
+
+    toast(
+      existing.error.message
+    );
+
+    return;
+
+  }
+
+
+  if(existing.data){
+
+    toast(
+      `${roundNumber}. kolo već postoji.`
+    );
+
+    return;
+
+  }
+
+
+  const rows=
+    Array.from(
+      document.querySelectorAll(
+        "#newRoundMatches .new-round-row"
+      )
+    );
+
+
+  if(!rows.length){
+
+    toast(
+      "Dodaj barem jednu utakmicu."
+    );
+
+    return;
+
+  }
+
+
+  const games=[];
+
+
+  for(const row of rows){
+
+    const home=
+      row
+        .querySelector(".newHome")
+        .value
+        .trim();
+
+
+    const away=
+      row
+        .querySelector(".newAway")
+        .value
+        .trim();
+
+
+    const date=
+      row
+        .querySelector(".newDate")
+        .value;
+
+
+    const time=
+      row
+        .querySelector(".newTime")
+        .value;
+
+
+    if(!home||!away||!date||!time){
+
+      toast(
+        "Svaka utakmica mora imati domaćina, gosta, datum i vrijeme."
+      );
+
+      return;
+
+    }
+
+
+    if(home===away){
+
+      toast(
+        "Domaćin i gost ne mogu biti isti."
+      );
+
+      return;
+
+    }
+
+
+    const kickoff=
+      toISO(date,time);
+
+
+    if(!kickoff){
+
+      toast(
+        "Jedan od termina nije ispravan."
+      );
+
+      return;
+
+    }
+
+
+    games.push({
+      home,
+      away,
+      kickoff
+    });
+
+  }
+
+
+  const lockedAt=
+    lockFromKickoffs(
+      games.map(x=>x.kickoff)
+    );
+
+
+  /*
+    Prvo stvaramo kolo kao NEOBJAVLJENO.
+  */
+
+  const createdRound=
+    await supabase
+      .from("rounds")
+      .insert({
+
+        round_number:
+          roundNumber,
+
+        locked_at:
+          lockedAt,
+
+        is_finished:
+          false,
+
+        is_published:
+          false
+
+      })
+      .select("*")
+      .single();
+
+
+  if(createdRound.error){
+
+    toast(
+      createdRound.error.message
+    );
+
+    return;
+
+  }
+
+
+  const newRound=
+    createdRound.data;
+
+
+  /*
+    Dodajemo sve utakmice.
+  */
+
+  for(const game of games){
+
+    const {error}=
+      await supabase
+        .from("matches")
+        .insert({
+
+          round_id:
+            newRound.id,
+
+          home_team:
+            game.home,
+
+          away_team:
+            game.away,
+
+          kickoff_at:
+            game.kickoff,
+
+          schedule_source:
+            "admin",
+
+          schedule_updated_at:
+            new Date().toISOString()
+
+        });
+
+
+    if(error){
+
+      toast(
+        "Kolo je napravljeno, ali utakmica nije spremljena: "+
+        error.message
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  /*
+    Tek kada su utakmice uspješno spremljene,
+    objavljujemo kolo.
+  */
+
+  const published=
+    await supabase
+      .from("rounds")
+      .update({
+        is_published:true
+      })
+      .eq(
+        "id",
+        newRound.id
+      );
+
+
+  if(published.error){
+
+    toast(
+      "Kolo je spremljeno, ali objava nije uspjela: "+
+      published.error.message
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Učitavamo novo kolo.
+  */
+
+  await loadData();
+
+
+  currentPage="admin";
+
+
+  toast(
+    `${roundNumber}. kolo je spremljeno i objavljeno.`
+  );
+
+
+  render();
 
 }
 
@@ -2129,12 +3405,23 @@ async function finishRound(){
   }
 
 
+  if(!matches.length){
+
+    toast(
+      "Nema utakmica za obračun."
+    );
+
+    return;
+
+  }
+
+
   const updates=[];
 
 
   document
     .querySelectorAll(
-      "#adminMatches .match"
+      "#adminResults .match"
     )
     .forEach(el=>{
 
@@ -2168,12 +3455,16 @@ async function finishRound(){
     });
 
 
+  /*
+    Nema više ograničenja na 5.
+  */
+
   if(
     updates.length!==matches.length
   ){
 
     toast(
-      "Unesi rezultat svih 5 utakmica."
+      "Unesi rezultat svih utakmica."
     );
 
     return;
