@@ -263,6 +263,26 @@ th{
   margin-bottom:8px
 }
 
+.admin-result-box{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  background:#fafbfc
+}
+
+.admin-result-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:12px;
+  align-items:end
+}
+
+.result-status{
+  margin-top:8px;
+  font-size:13px
+}
+
 .toast{
   position:fixed;
   right:14px;
@@ -301,6 +321,10 @@ th{
   }
 
   .admin-match-grid{
+    grid-template-columns:1fr
+  }
+
+  .admin-result-row{
     grid-template-columns:1fr
   }
 }
@@ -501,6 +525,69 @@ function nameById(id){
     );
 
   return p?.name||"Igrač";
+
+}
+
+
+/*
+  Izračun bodova za već spremljeni stvarni rezultat.
+
+  3 boda = točan rezultat
+  1 bod  = točan ishod
+  ukupno = 4 ako su oba točna
+
+  Ovo služi samo za PRIVREMENI prikaz
+  prije završetka kola.
+
+  Baza se ne mijenja dok admin ne
+  klikne "Obračunaj i završi kolo".
+*/
+
+function calculatePoints(
+  predictedHome,
+  predictedAway,
+  predictedOutcome,
+  actualHome,
+  actualAway
+){
+
+  if(
+    actualHome==null ||
+    actualAway==null
+  ){
+
+    return null;
+
+  }
+
+
+  const exact=
+    Number(predictedHome)===
+      Number(actualHome) &&
+    Number(predictedAway)===
+      Number(actualAway);
+
+
+  const actualOutcome=
+    Number(actualHome)>
+      Number(actualAway)
+      ?"1"
+      :
+    Number(actualHome)<
+      Number(actualAway)
+      ?"2"
+      :"X";
+
+
+  const outcomeCorrect=
+    predictedOutcome===
+    actualOutcome;
+
+
+  return(
+    (exact?3:0)+
+    (outcomeCorrect?1:0)
+  );
 
 }
 
@@ -1498,12 +1585,14 @@ function showResults(){
 
   matches.forEach(m=>{
 
-    const actual=
+    const hasActual=
       m.actual_home_score!=null &&
-      m.actual_away_score!=null
+      m.actual_away_score!=null;
 
+
+    const actual=
+      hasActual
       ?`${m.actual_home_score}:${m.actual_away_score}`
-
       :"—";
 
 
@@ -1557,6 +1646,46 @@ function showResults(){
 
       list.forEach(p=>{
 
+        let pointsText="—";
+
+
+        /*
+          Ako je stvarni rezultat već spremljen,
+          računamo bodove odmah u JavaScriptu.
+
+          VAŽNO:
+          Ovo NE mijenja predictions.points.
+          Zato se Poredak još ne mijenja.
+        */
+
+        if(hasActual){
+
+          const temporaryPoints=
+            calculatePoints(
+              p.predicted_home_score,
+              p.predicted_away_score,
+              p.predicted_outcome,
+              m.actual_home_score,
+              m.actual_away_score
+            );
+
+
+          if(temporaryPoints!=null){
+
+            pointsText=
+              `${temporaryPoints} bod.`;
+
+          }
+
+        }
+        else if(round.is_finished){
+
+          pointsText=
+            `${p.points??0} bod.`;
+
+        }
+
+
         html+=`
 
           <div class="pred-row">
@@ -1577,7 +1706,7 @@ function showResults(){
             ·
 
             <b>
-              ${p.points??0} bod.
+              ${pointsText}
             </b>
 
           </div>
@@ -1730,6 +1859,17 @@ async function showTable(){
 
   const earned={};
 
+
+  /*
+    Poredak namjerno koristi samo
+    spremljeni predictions.points.
+
+    Privremeni bodovi iz Rezultata se
+    ovdje NE računaju.
+
+    Zato se Poredak mijenja tek nakon
+    finish_round().
+  */
 
   (preds.data||[])
     .forEach(x=>{
@@ -1981,8 +2121,11 @@ function showAdmin(){
         </h2>
 
         <p class="muted">
-          Unesi stvarne rezultate.
-          Nakon obračuna kolo se završava.
+          Rezultat svake utakmice možeš spremiti
+          odmah nakon završetka. Bodovi će se
+          odmah prikazati u Rezultatima, ali
+          Poredak se mijenja tek nakon konačnog
+          obračuna kola.
         </p>
 
         <div id="adminResults"></div>
@@ -2475,12 +2618,6 @@ async function saveAdminSchedule(){
   }
 
 
-  const existingIds=
-    new Set(
-      matches.map(m=>String(m.id))
-    );
-
-
   /*
     Prvo spremamo postojeće utakmice.
   */
@@ -2651,50 +2788,96 @@ function renderAdminResults(){
 
   matches.forEach(m=>{
 
+    const hasResult=
+      m.actual_home_score!=null &&
+      m.actual_away_score!=null;
+
+
     box.insertAdjacentHTML(
       "beforeend",
       `
 
       <div
-        class="match"
+        class="admin-result-box"
         data-mid="${m.id}"
       >
 
-        <div class="team">
+        <div class="admin-result-row">
 
-          ${esc(m.home_team)}
-          –
-          ${esc(m.away_team)}
+          <div class="team">
+
+            ${esc(m.home_team)}
+            –
+            ${esc(m.away_team)}
+
+            <div class="muted">
+              ${fmtDate(m.kickoff_at)}
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <label>
+              Rezultat
+            </label>
+
+            <div class="score">
+
+              <input
+                class="ah"
+                type="number"
+                min="0"
+                max="30"
+                value="${m.actual_home_score??""}"
+              >
+
+              <span>:</span>
+
+              <input
+                class="aa"
+                type="number"
+                min="0"
+                max="30"
+                value="${m.actual_away_score??""}"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <button
+              class="btn primary save-result"
+              data-mid="${m.id}"
+            >
+              ${
+                hasResult
+                ?"Spremi promjenu"
+                :"Spremi rezultat"
+              }
+            </button>
+
+          </div>
 
         </div>
 
 
-        <div class="score">
+        <div class="result-status">
 
-          <input
-            class="ah"
-            type="number"
-            min="0"
-            max="30"
-            value="${m.actual_home_score??""}"
-          >
-
-          <span>:</span>
-
-          <input
-            class="aa"
-            type="number"
-            min="0"
-            max="30"
-            value="${m.actual_away_score??""}"
-          >
-
-        </div>
-
-
-        <div class="right">
-
-          ${fmtDate(m.kickoff_at)}
+          ${
+            hasResult
+            ?`<span class="success">
+                ✓ Rezultat spremljen: 
+                ${m.actual_home_score}:${m.actual_away_score}
+              </span>`
+            :`<span class="muted">
+                Rezultat još nije spremljen.
+              </span>`
+          }
 
         </div>
 
@@ -2704,6 +2887,179 @@ function renderAdminResults(){
     );
 
   });
+
+
+  box
+    .querySelectorAll(".save-result")
+    .forEach(button=>{
+
+      button.onclick=
+        ()=>saveSingleResult(
+          button.dataset.mid
+        );
+
+    });
+
+}
+
+
+/* =========================================
+   ADMIN — SPREMI JEDAN REZULTAT
+========================================= */
+
+async function saveSingleResult(matchId){
+
+  if(!profile?.is_admin){
+
+    toast(
+      "Samo administrator može unositi rezultate."
+    );
+
+    return;
+
+  }
+
+
+  if(!round||round.is_finished){
+
+    toast(
+      "Kolo je već završeno."
+    );
+
+    return;
+
+  }
+
+
+  const row=
+    document.querySelector(
+      `.admin-result-box[data-mid="${matchId}"]`
+    );
+
+
+  if(!row){
+
+    toast(
+      "Utakmica nije pronađena."
+    );
+
+    return;
+
+  }
+
+
+  const h=
+    row
+      .querySelector(".ah")
+      .value
+      .trim();
+
+
+  const a=
+    row
+      .querySelector(".aa")
+      .value
+      .trim();
+
+
+  if(h===""||a===""){
+
+    toast(
+      "Unesi oba dijela rezultata."
+    );
+
+    return;
+
+  }
+
+
+  const homeScore=
+    Number(h);
+
+
+  const awayScore=
+    Number(a);
+
+
+  if(
+    !Number.isInteger(homeScore) ||
+    !Number.isInteger(awayScore) ||
+    homeScore<0 ||
+    awayScore<0 ||
+    homeScore>30 ||
+    awayScore>30
+  ){
+
+    toast(
+      "Rezultat mora biti cijeli broj od 0 do 30."
+    );
+
+    return;
+
+  }
+
+
+  const button=
+    row.querySelector(".save-result");
+
+
+  if(button)
+    button.disabled=true;
+
+
+  const {error}=
+    await supabase
+      .from("matches")
+      .update({
+
+        actual_home_score:
+          homeScore,
+
+        actual_away_score:
+          awayScore
+
+      })
+      .eq(
+        "id",
+        matchId
+      );
+
+
+  if(button)
+    button.disabled=false;
+
+
+  if(error){
+
+    toast(
+      "Spremanje rezultata nije uspjelo: "+
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Ovdje namjerno NE pozivamo finish_round.
+
+    Zato se predictions.points ne mijenjaju
+    i Poredak ostaje isti.
+
+    Samo ponovno učitavamo podatke kako bi
+    rezultat i privremeni bodovi odmah bili vidljivi.
+  */
+
+  await loadData();
+
+
+  toast(
+    "Rezultat je spremljen."
+  );
+
+
+  showAdmin();
 
 }
 
@@ -3421,7 +3777,7 @@ async function finishRound(){
 
   document
     .querySelectorAll(
-      "#adminResults .match"
+      "#adminResults .admin-result-box"
     )
     .forEach(el=>{
 
@@ -3457,6 +3813,7 @@ async function finishRound(){
 
   /*
     Nema više ograničenja na 5.
+    SVE utakmice moraju imati rezultat.
   */
 
   if(
@@ -3594,4 +3951,4 @@ boot();
 </script>
 
 </body>
-</html>
+  </html>
