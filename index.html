@@ -283,6 +283,73 @@ th{
   font-size:13px
 }
 
+.history-round{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
+  padding:13px;
+  margin-bottom:9px;
+  background:#fafbfc;
+  cursor:pointer
+}
+
+.history-round:hover{
+  background:#f1f4f8
+}
+
+.history-round.active{
+  border-color:#18233a;
+  background:#eef1f6
+}
+
+.history-round-title{
+  font-weight:800
+}
+
+.history-round-info{
+  color:#6d778a;
+  font-size:13px;
+  margin-top:4px
+}
+
+.history-summary{
+  margin-bottom:14px
+}
+
+.history-player{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #edf0f4
+}
+
+.history-player:last-child{
+  border-bottom:0
+}
+
+.history-match{
+  border-bottom:1px solid #edf0f4;
+  padding:13px 0
+}
+
+.history-match:last-child{
+  border-bottom:0
+}
+
+.history-match-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  font-weight:800
+}
+
+.history-pred{
+  font-size:14px;
+  padding:5px 0;
+  border-top:1px solid #f0f2f5
+}
+
 .toast{
   position:fixed;
   right:14px;
@@ -326,6 +393,10 @@ th{
 
   .admin-result-row{
     grid-template-columns:1fr
+  }
+
+  .history-match-head{
+    flex-direction:column
   }
 }
 </style>
@@ -379,6 +450,18 @@ let matches=[];
 let predictions=[];
 let profiles=[];
 let currentPage="predictions";
+
+/*
+  Sva objavljena kola.
+  Koristi se samo za Povijest.
+*/
+let historyRounds=[];
+
+
+/*
+  Odabrano kolo u Povijesti.
+*/
+let historyRoundId=null;
 
 
 /* =========================================
@@ -530,17 +613,11 @@ function nameById(id){
 
 
 /*
-  Izračun bodova za već spremljeni stvarni rezultat.
+  Izračun bodova.
 
   3 boda = točan rezultat
   1 bod  = točan ishod
   ukupno = 4 ako su oba točna
-
-  Ovo služi samo za PRIVREMENI prikaz
-  prije završetka kola.
-
-  Baza se ne mijenja dok admin ne
-  klikne "Obračunaj i završi kolo".
 */
 
 function calculatePoints(
@@ -866,6 +943,29 @@ async function loadData(){
   if(!p.error)
     predictions=p.data||[];
 
+
+  /*
+    Učitavamo sva objavljena kola za Povijest.
+
+    Ovo je odvojeno od aktivnog kola.
+  */
+
+  const hr=
+    await supabase
+      .from("rounds")
+      .select("*")
+      .eq("is_published",true)
+      .order(
+        "round_number",
+        {ascending:false}
+      );
+
+
+  if(!hr.error)
+    historyRounds=hr.data||[];
+  else
+    historyRounds=[];
+
 }
 
 
@@ -907,6 +1007,10 @@ function shell(){
 
         <button data-page="table">
           Poredak
+        </button>
+
+        <button data-page="history">
+          Povijest
         </button>
 
         ${
@@ -992,6 +1096,10 @@ function render(){
 
   if(currentPage==="table")
     showTable();
+
+
+  if(currentPage==="history")
+    showHistory();
 
 
   if(currentPage==="admin")
@@ -1649,15 +1757,6 @@ function showResults(){
         let pointsText="—";
 
 
-        /*
-          Ako je stvarni rezultat već spremljen,
-          računamo bodove odmah u JavaScriptu.
-
-          VAŽNO:
-          Ovo NE mijenja predictions.points.
-          Zato se Poredak još ne mijenja.
-        */
-
         if(hasActual){
 
           const temporaryPoints=
@@ -1861,14 +1960,7 @@ async function showTable(){
 
 
   /*
-    Poredak namjerno koristi samo
-    spremljeni predictions.points.
-
-    Privremeni bodovi iz Rezultata se
-    ovdje NE računaju.
-
-    Zato se Poredak mijenja tek nakon
-    finish_round().
+    Poredak koristi samo spremljene bodove.
   */
 
   (preds.data||[])
@@ -1988,6 +2080,603 @@ async function showTable(){
   </div>
 
   `;
+
+}
+
+
+/* =========================================
+   POVIJEST
+========================================= */
+
+async function showHistory(){
+
+  const c=
+    document.getElementById("content");
+
+
+  c.innerHTML=`
+
+    <div class="card">
+
+      <h2>
+        Povijest prognoza
+      </h2>
+
+      <p class="muted">
+        Odaberi prethodno kolo za pregled
+        prognoza, stvarnih rezultata i osvojenih
+        bodova.
+      </p>
+
+      <div id="historyRounds"></div>
+
+    </div>
+
+    <div id="historyDetail"></div>
+
+  `;
+
+
+  const roundBox=
+    document.getElementById(
+      "historyRounds"
+    );
+
+
+  if(!historyRounds.length){
+
+    roundBox.innerHTML=`
+      <p class="muted">
+        Još nema povijesti kola.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  historyRounds.forEach(r=>{
+
+    const isCurrent=
+      round &&
+      r.id===round.id;
+
+
+    roundBox.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <div
+        class="history-round ${
+          historyRoundId===r.id
+          ?"active"
+          :""
+        }"
+        data-history-id="${r.id}"
+      >
+
+        <div class="history-round-title">
+
+          ${r.round_number}. kolo
+
+          ${
+            isCurrent
+            ?` · <span class="badge">trenutno</span>`
+            :""
+          }
+
+        </div>
+
+        <div class="history-round-info">
+
+          ${
+            r.is_finished
+            ?"🏁 Završeno"
+            :
+            "🔒 Nije završeno"
+          }
+
+        </div>
+
+      </div>
+
+      `
+    );
+
+  });
+
+
+  roundBox
+    .querySelectorAll(".history-round")
+    .forEach(el=>{
+
+      el.onclick=()=>{
+
+        historyRoundId=
+          Number(el.dataset.historyId);
+
+        showHistory();
+
+      };
+
+    });
+
+
+  /*
+    Ako ništa nije odabrano,
+    automatski odaberi prvo završeno
+    kolo koje nije trenutno.
+  */
+
+  if(historyRoundId==null){
+
+    const firstFinished=
+      historyRounds.find(
+        r=>
+          r.is_finished &&
+          (!round||r.id!==round.id)
+      );
+
+
+    if(firstFinished){
+
+      historyRoundId=
+        firstFinished.id;
+
+    }
+    else{
+
+      const firstOther=
+        historyRounds.find(
+          r=>
+            !round ||
+            r.id!==round.id
+        );
+
+
+      if(firstOther)
+        historyRoundId=firstOther.id;
+
+    }
+
+
+    if(historyRoundId!=null){
+
+      showHistory();
+
+      return;
+
+    }
+
+  }
+
+
+  if(historyRoundId==null){
+
+    return;
+
+  }
+
+
+  await showHistoryRound(
+    historyRoundId
+  );
+
+}
+
+
+/* =========================================
+   POVIJEST — ODABRANO KOLO
+========================================= */
+
+async function showHistoryRound(roundId){
+
+  const c=
+    document.getElementById(
+      "historyDetail"
+    );
+
+
+  if(!c)
+    return;
+
+
+  c.innerHTML=`
+
+    <div class="card">
+
+      <h2>
+        Učitavanje povijesti...
+      </h2>
+
+    </div>
+
+  `;
+
+
+  const selectedRound=
+    historyRounds.find(
+      r=>r.id===roundId
+    );
+
+
+  if(!selectedRound){
+
+    c.innerHTML=`
+      <div class="card">
+        <p class="danger">
+          Kolo nije pronađeno.
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  /*
+    Učitavamo utakmice odabranog kola.
+  */
+
+  const m=
+    await supabase
+      .from("matches")
+      .select("*")
+      .eq(
+        "round_id",
+        selectedRound.id
+      )
+      .order("kickoff_at");
+
+
+  if(m.error){
+
+    c.innerHTML=`
+      <div class="card">
+        <p class="danger">
+          ${esc(m.error.message)}
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const historyMatches=
+    m.data||[];
+
+
+  /*
+    Učitavamo prognoze.
+    Za završena kola RLS omogućuje
+    da ih vide svi igrači.
+  */
+
+  const p=
+    await supabase
+      .from("predictions")
+      .select("*");
+
+
+  if(p.error){
+
+    c.innerHTML=`
+      <div class="card">
+        <p class="danger">
+          ${esc(p.error.message)}
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const allPredictions=
+    p.data||[];
+
+
+  /*
+    Sažetak bodova po igraču.
+  */
+
+  const playerTotals={};
+
+
+  historyMatches.forEach(match=>{
+
+    const hasActual=
+      match.actual_home_score!=null &&
+      match.actual_away_score!=null;
+
+
+    if(!hasActual)
+      return;
+
+
+    allPredictions
+      .filter(
+        p=>p.match_id===match.id
+      )
+      .forEach(p=>{
+
+        const pts=
+          selectedRound.is_finished
+          ?Number(p.points||0)
+          :
+          calculatePoints(
+            p.predicted_home_score,
+            p.predicted_away_score,
+            p.predicted_outcome,
+            match.actual_home_score,
+            match.actual_away_score
+          );
+
+
+        if(pts!=null){
+
+          playerTotals[p.user_id]=
+            (playerTotals[p.user_id]||0)+
+            Number(pts);
+
+        }
+
+      });
+
+  });
+
+
+  /*
+    Dodajemo i igrače koji imaju 0 bodova,
+    da se vide u sažetku.
+  */
+
+  profiles.forEach(p=>{
+
+    if(playerTotals[p.id]==null)
+      playerTotals[p.id]=0;
+
+  });
+
+
+  const playerRows=
+    profiles
+      .map(p=>({
+
+        id:p.id,
+
+        name:p.name,
+
+        points:
+          playerTotals[p.id]||0
+
+      }))
+      .sort(
+        (a,b)=>
+          b.points-a.points
+      );
+
+
+  let html=`
+
+    <div class="card">
+
+      <h2>
+        ${selectedRound.round_number}. kolo
+      </h2>
+
+      <p class="muted">
+
+        ${
+          selectedRound.is_finished
+          ?"🏁 Kolo je završeno."
+          :"🔒 Kolo još nije završeno."
+        }
+
+      </p>
+
+      <div class="history-summary">
+
+        <h3>
+          Bodovi u kolu
+        </h3>
+
+  `;
+
+
+  playerRows.forEach((p,i)=>{
+
+    html+=`
+
+      <div class="history-player">
+
+        <span>
+          <b>
+            ${i+1}. ${esc(p.name)}
+          </b>
+        </span>
+
+        <b>
+          ${p.points} bod.
+        </b>
+
+      </div>
+
+    `;
+
+  });
+
+
+  html+=`
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        Utakmice i prognoze
+      </h3>
+
+  `;
+
+
+  if(!historyMatches.length){
+
+    html+=`
+      <p class="muted">
+        Ovo kolo nema utakmica.
+      </p>
+    `;
+
+  }
+
+
+  historyMatches.forEach(match=>{
+
+    const hasActual=
+      match.actual_home_score!=null &&
+      match.actual_away_score!=null;
+
+
+    const actual=
+      hasActual
+      ?`${match.actual_home_score}:${match.actual_away_score}`
+      :"—";
+
+
+    const matchPredictions=
+      allPredictions.filter(
+        p=>p.match_id===match.id
+      );
+
+
+    html+=`
+
+      <div class="history-match">
+
+        <div class="history-match-head">
+
+          <span>
+            ${esc(match.home_team)}
+            –
+            ${esc(match.away_team)}
+          </span>
+
+          <span>
+            Stvarni rezultat:
+            <b>${actual}</b>
+          </span>
+
+        </div>
+
+        <div class="muted" style="font-size:13px;margin:4px 0 8px">
+          ${fmtDate(match.kickoff_at)}
+        </div>
+
+    `;
+
+
+    if(matchPredictions.length){
+
+      matchPredictions.forEach(p=>{
+
+        let points="—";
+
+
+        if(hasActual){
+
+          points=
+            calculatePoints(
+              p.predicted_home_score,
+              p.predicted_away_score,
+              p.predicted_outcome,
+              match.actual_home_score,
+              match.actual_away_score
+            );
+
+        }
+
+
+        if(
+          points==null &&
+          selectedRound.is_finished
+        ){
+
+          points=
+            Number(p.points||0);
+
+        }
+
+
+        html+=`
+
+          <div class="history-pred">
+
+            <b>
+              ${esc(nameById(p.user_id))}
+            </b>
+
+            :
+            ${p.predicted_home_score}
+            :
+            ${p.predicted_away_score}
+
+            · ishod
+            ${esc(
+              p.predicted_outcome||"-"
+            )}
+
+            ·
+
+            <b>
+              ${points??"—"} bod.
+            </b>
+
+          </div>
+
+        `;
+
+      });
+
+    }
+    else{
+
+      html+=`
+
+        <div class="muted">
+          Nema prognoza za ovu utakmicu.
+        </div>
+
+      `;
+
+    }
+
+
+    html+=`
+
+      </div>
+
+    `;
+
+  });
+
+
+  html+=`
+
+    </div>
+
+  `;
+
+
+  c.innerHTML=html;
 
 }
 
@@ -2618,10 +3307,6 @@ async function saveAdminSchedule(){
   }
 
 
-  /*
-    Prvo spremamo postojeće utakmice.
-  */
-
   for(const item of data){
 
     const id=
@@ -2667,10 +3352,6 @@ async function saveAdminSchedule(){
   }
 
 
-  /*
-    Zatim dodajemo nove utakmice.
-  */
-
   for(const item of data){
 
     if(item.row.dataset.new!=="true")
@@ -2709,15 +3390,6 @@ async function saveAdminSchedule(){
 
   }
 
-
-  /*
-    Zaključavanje se automatski računa
-    2 sata prije prve utakmice.
-
-    Ako admin promijeni termin prve utakmice,
-    prije zaključavanja se pomiče i vrijeme
-    zaključavanja.
-  */
 
   const newKickoffs=
     data.map(x=>x.kickoff);
@@ -3041,16 +3713,6 @@ async function saveSingleResult(matchId){
   }
 
 
-  /*
-    Ovdje namjerno NE pozivamo finish_round.
-
-    Zato se predictions.points ne mijenjaju
-    i Poredak ostaje isti.
-
-    Samo ponovno učitavamo podatke kako bi
-    rezultat i privremeni bodovi odmah bili vidljivi.
-  */
-
   await loadData();
 
 
@@ -3144,10 +3806,6 @@ function showNewRoundForm(){
     .getElementById("createRound")
     .onclick=createRound;
 
-
-  /*
-    Odmah dodajemo jedan prazan red.
-  */
 
   addNewRoundMatch();
 
@@ -3294,10 +3952,6 @@ async function createRound(){
   }
 
 
-  /*
-    Provjera postoji li već to kolo.
-  */
-
   const existing=
     await supabase
       .from("rounds")
@@ -3433,10 +4087,6 @@ async function createRound(){
     );
 
 
-  /*
-    Prvo stvaramo kolo kao NEOBJAVLJENO.
-  */
-
   const createdRound=
     await supabase
       .from("rounds")
@@ -3473,10 +4123,6 @@ async function createRound(){
   const newRound=
     createdRound.data;
 
-
-  /*
-    Dodajemo sve utakmice.
-  */
 
   for(const game of games){
 
@@ -3520,11 +4166,6 @@ async function createRound(){
   }
 
 
-  /*
-    Tek kada su utakmice uspješno spremljene,
-    objavljujemo kolo.
-  */
-
   const published=
     await supabase
       .from("rounds")
@@ -3548,10 +4189,6 @@ async function createRound(){
 
   }
 
-
-  /*
-    Učitavamo novo kolo.
-  */
 
   await loadData();
 
@@ -3810,11 +4447,6 @@ async function finishRound(){
 
     });
 
-
-  /*
-    Nema više ograničenja na 5.
-    SVE utakmice moraju imati rezultat.
-  */
 
   if(
     updates.length!==matches.length
