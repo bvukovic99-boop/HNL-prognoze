@@ -6,7 +6,10 @@
 <title>HNL Prognoza</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box
+}
 
 body{
   margin:0;
@@ -148,20 +151,20 @@ input,select{
 
 
 /* =========================================
-   UTAKMICE — NOVE KARTICE
+   UTAKMICE — NOVI PRIKAZ
 ========================================= */
+
+.match-list{
+  display:grid;
+  gap:12px
+}
 
 .match-card{
   border:1px solid #e1e5ec;
   border-radius:14px;
   padding:15px;
-  margin-bottom:12px;
   background:#fff;
-  box-shadow:0 2px 7px #1720330d
-}
-
-.match-card:last-child{
-  margin-bottom:0
+  box-shadow:0 2px 7px #1720330c
 }
 
 .match-card-top{
@@ -170,55 +173,46 @@ input,select{
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
-  margin-bottom:12px
+  margin-bottom:10px
 }
 
-.match-number{
+.match-date{
   color:#6d778a;
   font-size:13px;
-  font-weight:800
+  font-weight:650
 }
 
 .match-status{
   display:inline-flex;
   align-items:center;
   gap:5px;
-  padding:5px 9px;
   border-radius:999px;
+  padding:5px 9px;
   font-size:12px;
   font-weight:800
 }
 
-.status-open{
-  background:#ecfdf3;
-  color:#067647
-}
-
-.status-locked{
-  background:#fff1f2;
-  color:#be123c
-}
-
-.status-played{
-  background:#eef1f6;
-  color:#344054
-}
-
-.status-exact{
-  background:#fff7d6;
+.status-wait{
+  background:#fff4cc;
   color:#8a5a00
 }
 
-.status-outcome{
-  background:#edf7ff;
-  color:#075985
+.status-locked{
+  background:#ffe1e5;
+  color:#a71930
+}
+
+.status-played{
+  background:#dff7e8;
+  color:#067647
 }
 
 .match-teams{
   display:grid;
   grid-template-columns:1fr auto 1fr;
-  gap:12px;
-  align-items:center
+  align-items:center;
+  gap:10px;
+  margin:10px 0
 }
 
 .match-team{
@@ -235,127 +229,80 @@ input,select{
   font-weight:800
 }
 
-.match-date{
-  color:#6d778a;
-  font-size:13px;
-  margin-top:5px
-}
-
-.my-prediction-box{
-  margin-top:14px;
-  padding-top:12px;
-  border-top:1px solid #edf0f4
-}
-
-.my-prediction-title{
-  color:#6d778a;
-  font-size:12px;
-  font-weight:800;
-  text-transform:uppercase;
-  margin-bottom:7px
-}
-
-.my-prediction{
+.match-score{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap
-}
-
-.pred-score{
-  font-size:20px;
-  font-weight:850
-}
-
-.actual-result{
-  display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:6px 10px;
-  background:#f1f4f8;
-  border-radius:9px;
-  font-weight:800
+  justify-content:center
 }
 
-.prediction-inputs{
-  display:flex;
-  align-items:center;
-  gap:7px
-}
-
-.prediction-inputs input{
+.match-score input{
   width:58px;
-  text-align:center
+  text-align:center;
+  font-weight:800;
+  font-size:18px
 }
 
-.outcomes{
+.match-outcome{
   display:flex;
-  gap:5px;
-  margin-top:9px
+  justify-content:center;
+  gap:6px;
+  margin-top:10px
 }
 
-.outcomes button{
+.match-outcome button{
   border:1px solid #cfd5df;
   background:#fff;
-  border-radius:7px;
-  padding:5px 9px;
+  border-radius:8px;
+  padding:6px 13px;
   font-weight:800
 }
 
-.outcomes button.sel{
+.match-outcome button.sel{
   background:#18233a;
-  color:#fff
+  color:#fff;
+  border-color:#18233a
 }
 
-.match-points{
-  font-weight:850
+.match-prediction{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #edf0f4;
+  font-size:14px
 }
 
-.points-exact{
-  color:#8a5a00
+.match-result{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#f1f4f8;
+  font-weight:700
 }
 
-.points-outcome{
-  color:#075985
+.hit-result{
+  color:#067647;
+  font-weight:800
+}
+
+.hit-outcome{
+  color:#1769aa;
+  font-weight:800
+}
+
+.points-badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#18233a;
+  color:#fff;
+  font-size:12px;
+  font-weight:800
 }
 
 
 /* =========================================
-   STARI MATCH KLASI — ADMIN / KOMPATIBILNOST
+   STARI / OPĆI
 ========================================= */
-
-.match{
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  gap:10px;
-  align-items:center;
-  padding:12px 0;
-  border-bottom:1px solid #edf0f4
-}
-
-.match:last-child{
-  border-bottom:0
-}
-
-.team{
-  font-weight:750
-}
-
-.away{
-  text-align:right
-}
-
-.score{
-  display:flex;
-  gap:5px;
-  align-items:center
-}
-
-.score input{
-  width:58px;
-  text-align:center
-}
 
 .badge{
   display:inline-block;
@@ -366,148 +313,81 @@ input,select{
   font-weight:800
 }
 
-
-/* =========================================
-   POREDAK
-========================================= */
-
-.table-header-card{
-  margin-bottom:12px
+table{
+  width:100%;
+  border-collapse:collapse
 }
 
-.leaderboard-row{
-  display:grid;
-  grid-template-columns:48px 1fr 95px 100px 100px;
-  gap:10px;
-  align-items:center;
-  padding:13px 10px;
+th,td{
+  text-align:left;
+  padding:9px;
   border-bottom:1px solid #edf0f4
 }
 
-.leaderboard-row:last-child{
-  border-bottom:0
+th{
+  font-size:13px;
+  color:#6d778a
 }
 
-.leaderboard-row.first{
-  background:#fffaf0;
-  border-radius:10px
+.right{
+  text-align:right
 }
 
-.leaderboard-position{
-  font-size:20px;
-  font-weight:900;
+.center{
   text-align:center
 }
 
-.leaderboard-player{
-  font-weight:800
+.hidden{
+  display:none!important
 }
 
-.leaderboard-sub{
-  display:block;
-  color:#6d778a;
-  font-size:12px;
-  font-weight:500;
-  margin-top:2px
+.pred-list{
+  font-size:14px;
+  margin-top:7px
 }
 
-.leaderboard-number{
-  text-align:right;
-  font-weight:700
+.pred-row{
+  padding:7px 0;
+  border-top:1px solid #f0f2f5
 }
 
-.leaderboard-total{
-  text-align:right;
-  font-size:18px;
-  font-weight:900
-}
-
-.last-round-box{
-  margin-top:14px;
+.admin-match{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
   padding:12px;
-  border-radius:11px;
-  background:#f1f4f8
+  margin-bottom:10px;
+  background:#fafbfc
 }
 
-.last-round-title{
-  font-weight:850;
+.admin-match-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.admin-match-title{
+  font-weight:800;
   margin-bottom:8px
 }
 
-.last-round-list{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:6px 20px
-}
-
-.last-round-player{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:5px 0
-}
-
-
-/* =========================================
-   MOJA STATISTIKA
-========================================= */
-
-.stats-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-top:14px
-}
-
-.stat-box{
-  background:#f1f4f8;
+.admin-result-box{
+  border:1px solid #e1e5ec;
   border-radius:12px;
-  padding:13px
+  padding:12px;
+  margin-bottom:10px;
+  background:#fafbfc
 }
 
-.stat-label{
-  color:#6d778a;
-  font-size:12px;
-  font-weight:750;
-  margin-bottom:5px
+.admin-result-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:12px;
+  align-items:end
 }
 
-.stat-value{
-  font-size:22px;
-  font-weight:900
-}
-
-.stats-list{
-  margin-top:14px
-}
-
-.stats-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:9px 0;
-  border-bottom:1px solid #edf0f4
-}
-
-.stats-row:last-child{
-  border-bottom:0
-}
-
-.form-pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:32px;
-  padding:4px 7px;
-  border-radius:999px;
-  background:#eef1f6;
-  font-size:12px;
-  font-weight:850
-}
-
-.form-pill.good{
-  background:#ecfdf3;
-  color:#067647
+.result-status{
+  margin-top:8px;
+  font-size:13px
 }
 
 
@@ -578,60 +458,87 @@ input,select{
 
 .history-pred{
   font-size:14px;
-  padding:5px 0;
+  padding:6px 0;
   border-top:1px solid #f0f2f5
 }
 
 
 /* =========================================
-   ADMIN
+   POREDAK
 ========================================= */
 
-.admin-match{
-  border:1px solid #e1e5ec;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
-  background:#fafbfc
+.rank-number{
+  font-size:18px;
+  font-weight:850
 }
 
-.admin-match-grid{
+.rank-medal{
+  font-size:18px
+}
+
+.last-round{
+  font-weight:800
+}
+
+.rank-up{
+  color:#067647;
+  font-weight:800
+}
+
+.rank-down{
+  color:#b42318;
+  font-weight:800
+}
+
+
+/* =========================================
+   MOJA STATISTIKA
+========================================= */
+
+.stats-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px
-}
-
-.admin-match-title{
-  font-weight:800;
-  margin-bottom:8px
-}
-
-.admin-result-box{
-  border:1px solid #e1e5ec;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
-  background:#fafbfc
-}
-
-.admin-result-row{
-  display:grid;
-  grid-template-columns:1fr auto auto;
+  grid-template-columns:repeat(2,1fr);
   gap:12px;
-  align-items:end
+  margin-top:14px
 }
 
-.result-status{
-  margin-top:8px;
-  font-size:13px
+.stat-box{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
+  padding:14px;
+  background:#fafbfc
 }
 
-.info-box{
-  padding:12px;
-  border-radius:10px;
-  background:#f1f4f8;
-  margin-bottom:12px
+.stat-label{
+  color:#6d778a;
+  font-size:13px;
+  font-weight:700
 }
+
+.stat-value{
+  margin-top:4px;
+  font-size:25px;
+  font-weight:850
+}
+
+.stat-small{
+  margin-top:3px;
+  color:#6d778a;
+  font-size:12px
+}
+
+.best-round{
+  border:1px solid #e1e5ec;
+  border-radius:12px;
+  padding:13px;
+  margin-top:14px;
+  background:#fafbfc
+}
+
+
+/* =========================================
+   OSTALO
+========================================= */
 
 .toast{
   position:fixed;
@@ -645,51 +552,32 @@ input,select{
   max-width:340px
 }
 
-.right{
-  text-align:right
-}
-
-.center{
-  text-align:center
-}
-
-.hidden{
-  display:none!important
-}
-
-.pred-list{
-  font-size:14px;
-  margin-top:7px
-}
-
-.pred-row{
-  padding:5px 0;
-  border-top:1px solid #f0f2f5
+.info-box{
+  padding:12px;
+  border-radius:10px;
+  background:#f1f4f8;
+  margin-bottom:12px
 }
 
 
-@media(max-width:800px){
-
-  .stats-grid{
-    grid-template-columns:repeat(2,1fr)
-  }
-
-  .leaderboard-row{
-    grid-template-columns:42px 1fr 70px 80px
-  }
-
-  .leaderboard-row .start-col{
-    display:none
-  }
-
-  .last-round-list{
-    grid-template-columns:1fr
-  }
-
-}
-
+/* =========================================
+   MOBITEL
+========================================= */
 
 @media(max-width:700px){
+
+  .app{
+    padding:10px
+  }
+
+  header{
+    align-items:flex-start
+  }
+
+  .nav button{
+    padding:8px 10px;
+    font-size:13px
+  }
 
   .match-teams{
     grid-template-columns:1fr auto 1fr
@@ -699,16 +587,8 @@ input,select{
     font-size:15px
   }
 
-  .match-card{
-    padding:13px
-  }
-
-  .match{
-    grid-template-columns:1fr
-  }
-
-  .away{
-    text-align:left
+  .stats-grid{
+    grid-template-columns:1fr 1fr
   }
 
   .right{
@@ -716,7 +596,7 @@ input,select{
   }
 
   .center{
-    text-align:left
+    text-align:center
   }
 
   .admin-match-grid{
@@ -731,16 +611,33 @@ input,select{
     flex-direction:column
   }
 
-  .leaderboard-row{
-    grid-template-columns:40px 1fr 70px
+  table{
+    font-size:13px
   }
 
-  .leaderboard-row .hide-mobile{
-    display:none
+  th,td{
+    padding:7px 5px
   }
 
-  .leaderboard-total{
-    font-size:17px
+}
+
+
+/* =========================================
+   VRLO USKI MOBITEL
+========================================= */
+
+@media(max-width:430px){
+
+  .stats-grid{
+    grid-template-columns:1fr
+  }
+
+  .brand{
+    font-size:21px
+  }
+
+  .match-team{
+    font-size:14px
   }
 
 }
@@ -748,16 +645,23 @@ input,select{
 </style>
 </head>
 
+
 <body>
 
 <div id="root"></div>
+
 <div id="toast" class="toast hidden"></div>
+
 
 <script type="module">
 
 import { createClient }
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL=
   "https://tiumqykmnatvdljbfcwr.supabase.co";
@@ -788,6 +692,10 @@ const START={
   "Bojan":7
 };
 
+
+/* =========================================
+   GLOBALNE VARIJABLE
+========================================= */
 
 let user=null;
 let profile=null;
@@ -851,7 +759,8 @@ function locked(){
 
 function fmtDate(s){
 
-  if(!s)return "-";
+  if(!s)
+    return "-";
 
   return new Date(s).toLocaleString(
     "hr-HR",
@@ -867,25 +776,10 @@ function fmtDate(s){
 }
 
 
-function fmtShortDate(s){
-
-  if(!s)return "-";
-
-  return new Date(s).toLocaleDateString(
-    "hr-HR",
-    {
-      day:"2-digit",
-      month:"2-digit",
-      year:"numeric"
-    }
-  );
-
-}
-
-
 function inputDate(s){
 
-  if(!s)return "";
+  if(!s)
+    return "";
 
   const d=new Date(s);
 
@@ -900,7 +794,8 @@ function inputDate(s){
 
 function inputTime(s){
 
-  if(!s)return "";
+  if(!s)
+    return "";
 
   const d=new Date(s);
 
@@ -935,7 +830,9 @@ function lockFromKickoffs(items){
   const times=
     items
       .map(x=>new Date(x))
-      .filter(x=>!Number.isNaN(x.getTime()));
+      .filter(
+        x=>!Number.isNaN(x.getTime())
+      );
 
   if(!times.length)
     return null;
@@ -965,13 +862,29 @@ function nameById(id){
 }
 
 
-/*
-  Izračun bodova.
+function outcomeFromScore(home,away){
 
-  3 boda = točan rezultat
-  1 bod  = točan ishod
-  ukupno = 4 ako su oba točna
-*/
+  if(
+    home==null ||
+    away==null
+  )
+    return null;
+
+  return(
+    Number(home)>Number(away)
+      ?"1"
+      :
+    Number(home)<Number(away)
+      ?"2"
+      :"X"
+  );
+
+}
+
+
+/* =========================================
+   BODOVI
+========================================= */
 
 function calculatePoints(
   predictedHome,
@@ -999,14 +912,10 @@ function calculatePoints(
 
 
   const actualOutcome=
-    Number(actualHome)>
-      Number(actualAway)
-      ?"1"
-      :
-    Number(actualHome)<
-      Number(actualAway)
-      ?"2"
-      :"X";
+    outcomeFromScore(
+      actualHome,
+      actualAway
+    );
 
 
   const outcomeCorrect=
@@ -1022,37 +931,9 @@ function calculatePoints(
 }
 
 
-function outcomeCorrect(
-  predictedOutcome,
-  actualHome,
-  actualAway
-){
-
-  if(
-    actualHome==null ||
-    actualAway==null ||
-    !predictedOutcome
-  )
-    return false;
-
-
-  const actual=
-    Number(actualHome)>Number(actualAway)
-      ?"1"
-      :
-    Number(actualHome)<Number(actualAway)
-      ?"2"
-      :"X";
-
-
-  return predictedOutcome===actual;
-
-}
-
-
-/*
-  Status utakmice.
-*/
+/* =========================================
+   STATUS UTAKMICE
+========================================= */
 
 function matchStatus(m){
 
@@ -1064,23 +945,8 @@ function matchStatus(m){
   if(hasActual){
 
     return {
-      text:"Odigrano",
       cls:"status-played",
-      icon:"🟢"
-    };
-
-  }
-
-
-  if(
-    round &&
-    round.is_finished
-  ){
-
-    return {
-      text:"Završeno kolo",
-      cls:"status-played",
-      icon:"🏁"
+      text:"🟢 Odigrano"
     };
 
   }
@@ -1092,18 +958,16 @@ function matchStatus(m){
   ){
 
     return {
-      text:"Zaključano",
       cls:"status-locked",
-      icon:"🔴"
+      text:"🔴 Utakmica zaključana"
     };
 
   }
 
 
   return {
-    text:"Čeka se utakmica",
-    cls:"status-open",
-    icon:"🟡"
+    cls:"status-wait",
+    text:"🟠 Čeka se utakmica"
   };
 
 }
@@ -1119,11 +983,18 @@ function loginView(message=""){
 
   <div class="login">
 
-    <form class="login-card" id="loginForm">
+    <form
+      class="login-card"
+      id="loginForm"
+    >
 
-      <div style="font-size:42px">🏆</div>
+      <div style="font-size:42px">
+        🏆
+      </div>
 
-      <h1>HNL Prognoza</h1>
+      <h1>
+        HNL Prognoza
+      </h1>
 
       <p class="muted">
         Prognoziraj utakmice SuperSport HNL-a.
@@ -1135,7 +1006,9 @@ function loginView(message=""){
         :""
       }
 
-      <label>Korisničko ime</label>
+      <label>
+        Korisničko ime
+      </label>
 
       <input
         id="username"
@@ -1144,7 +1017,9 @@ function loginView(message=""){
         required
       >
 
-      <label>Lozinka</label>
+      <label>
+        Lozinka
+      </label>
 
       <input
         id="password"
@@ -1181,6 +1056,7 @@ function loginView(message=""){
 async function login(e){
 
   e.preventDefault();
+
 
   const username=
     document
@@ -1227,7 +1103,7 @@ async function login(e){
 
 
 /* =========================================
-   START APLIKACIJE
+   START
 ========================================= */
 
 async function start(u){
@@ -1348,15 +1224,23 @@ async function loadData(){
     profiles=pr.data||[];
 
 
-  if(!round)
+  if(!round){
+
+    historyRounds=[];
+
     return;
+
+  }
 
 
   const m=
     await supabase
       .from("matches")
       .select("*")
-      .eq("round_id",round.id)
+      .eq(
+        "round_id",
+        round.id
+      )
       .order("kickoff_at");
 
 
@@ -1381,7 +1265,10 @@ async function loadData(){
     await supabase
       .from("rounds")
       .select("*")
-      .eq("is_published",true)
+      .eq(
+        "is_published",
+        true
+      )
       .order(
         "round_number",
         {ascending:false}
@@ -1436,12 +1323,12 @@ function shell(){
           Poredak
         </button>
 
-        <button data-page="stats">
-          Moja statistika
-        </button>
-
         <button data-page="history">
           Povijest
+        </button>
+
+        <button data-page="stats">
+          Moja statistika
         </button>
 
         ${
@@ -1529,12 +1416,12 @@ function render(){
     showTable();
 
 
-  if(currentPage==="stats")
-    showStats();
-
-
   if(currentPage==="history")
     showHistory();
+
+
+  if(currentPage==="stats")
+    showStats();
 
 
   if(currentPage==="admin")
@@ -1553,7 +1440,10 @@ function showChangePassword(){
 
   <div class="login">
 
-    <form class="login-card" id="changeForm">
+    <form
+      class="login-card"
+      id="changeForm"
+    >
 
       <div style="font-size:42px">
         🔐
@@ -1710,212 +1600,6 @@ function myPrediction(matchId){
 
 
 /* =========================================
-   KARTICA UTAKMICE — PROGNOZE
-========================================= */
-
-function predictionMatchCard(m,index){
-
-  const p=
-    myPrediction(m.id)||{};
-
-
-  const h=
-    p.predicted_home_score??"";
-
-
-  const a=
-    p.predicted_away_score??"";
-
-
-  const o=
-    p.predicted_outcome??"";
-
-
-  const hasActual=
-    m.actual_home_score!=null &&
-    m.actual_away_score!=null;
-
-
-  const status=
-    matchStatus(m);
-
-
-  return `
-
-    <div
-      class="match-card"
-      data-mid="${m.id}"
-    >
-
-      <div class="match-card-top">
-
-        <span class="match-number">
-          Utakmica ${index+1}
-        </span>
-
-        <span class="match-status ${status.cls}">
-          ${status.icon}
-          ${status.text}
-        </span>
-
-      </div>
-
-
-      <div class="match-teams">
-
-        <div>
-
-          <div class="match-team">
-            ${esc(m.home_team)}
-          </div>
-
-          <div class="match-date">
-            📅 ${fmtDate(m.kickoff_at)}
-          </div>
-
-        </div>
-
-
-        <div class="match-vs">
-          VS
-        </div>
-
-
-        <div class="match-team away">
-          ${esc(m.away_team)}
-        </div>
-
-      </div>
-
-
-      <div class="my-prediction-box">
-
-        <div class="my-prediction-title">
-          Moja prognoza
-        </div>
-
-
-        ${
-          !locked() &&
-          !round?.is_finished
-
-          ?`
-
-            <div class="prediction-inputs">
-
-              <input
-                class="ph"
-                type="number"
-                min="0"
-                max="30"
-                value="${esc(h)}"
-                placeholder="0"
-              >
-
-              <b>:</b>
-
-              <input
-                class="pa"
-                type="number"
-                min="0"
-                max="30"
-                value="${esc(a)}"
-                placeholder="0"
-              >
-
-            </div>
-
-
-            <div class="outcomes">
-
-              ${
-                ["1","X","2"]
-                  .map(x=>`
-
-                    <button
-                      class="ob ${o===x?"sel":""}"
-                      data-o="${x}"
-                    >
-                      ${x}
-                    </button>
-
-                  `)
-                  .join("")
-              }
-
-            </div>
-
-          `
-
-          :
-
-          p.id
-
-          ?`
-
-            <div class="my-prediction">
-
-              <span class="pred-score">
-                ${p.predicted_home_score}
-                :
-                ${p.predicted_away_score}
-              </span>
-
-              <span class="badge">
-                Ishod: ${esc(p.predicted_outcome||"-")}
-              </span>
-
-            </div>
-
-          `
-
-          :
-
-          `
-            <span class="muted">
-              Nema spremljene prognoze.
-            </span>
-          `
-
-        }
-
-
-        ${
-          hasActual
-          ?`
-
-            <div
-              style="
-                margin-top:10px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                gap:10px;
-                flex-wrap:wrap
-              "
-            >
-
-              <span class="actual-result">
-                ⚽ Stvarni rezultat:
-                ${m.actual_home_score}:${m.actual_away_score}
-              </span>
-
-            </div>
-
-          `
-          :""
-        }
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================
    PROGNOZE
 ========================================= */
 
@@ -1967,7 +1651,7 @@ function showPredictions(){
 
       ${
         round.locked_at
-        ?` · Zaključavanje: ${fmtDate(round.locked_at)}`
+        ?` Zaključavanje: ${fmtDate(round.locked_at)}`
         :""
       }
 
@@ -1977,7 +1661,7 @@ function showPredictions(){
 
 
   <div
-    class="card"
+    class="match-list"
     id="matches"
   ></div>
 
@@ -1991,9 +1675,11 @@ function showPredictions(){
   if(!matches.length){
 
     box.innerHTML=`
-      <p class="muted">
-        Za ovo kolo još nema utakmica.
-      </p>
+      <div class="card">
+        <p class="muted">
+          Za ovo kolo još nema utakmica.
+        </p>
+      </div>
     `;
 
     return;
@@ -2001,11 +1687,138 @@ function showPredictions(){
   }
 
 
-  matches.forEach((m,i)=>{
+  matches.forEach(m=>{
+
+    const p=
+      myPrediction(m.id)||{};
+
+
+    const h=
+      p.predicted_home_score??"";
+
+
+    const a=
+      p.predicted_away_score??"";
+
+
+    const o=
+      p.predicted_outcome??"";
+
+
+    const status=
+      matchStatus(m);
+
 
     box.insertAdjacentHTML(
       "beforeend",
-      predictionMatchCard(m,i)
+      `
+
+      <div
+        class="match-card"
+        data-mid="${m.id}"
+      >
+
+        <div class="match-card-top">
+
+          <span class="match-date">
+            📅 ${fmtDate(m.kickoff_at)}
+          </span>
+
+          <span
+            class="match-status ${status.cls}"
+          >
+            ${status.text}
+          </span>
+
+        </div>
+
+
+        <div class="match-teams">
+
+          <div class="match-team">
+            ${esc(m.home_team)}
+          </div>
+
+
+          <div class="match-vs">
+            –
+          </div>
+
+
+          <div class="match-team away">
+            ${esc(m.away_team)}
+          </div>
+
+        </div>
+
+
+        <div class="match-score">
+
+          <input
+            class="ph"
+            type="number"
+            min="0"
+            max="30"
+            value="${esc(h)}"
+            ${locked()||isFinished?"disabled":""}
+          >
+
+          <span>:</span>
+
+          <input
+            class="pa"
+            type="number"
+            min="0"
+            max="30"
+            value="${esc(a)}"
+            ${locked()||isFinished?"disabled":""}
+          >
+
+        </div>
+
+
+        <div class="match-outcome">
+
+          ${
+            ["1","X","2"]
+              .map(x=>`
+
+                <button
+                  class="ob ${o===x?"sel":""}"
+                  data-o="${x}"
+                  ${locked()||isFinished?"disabled":""}
+                >
+                  ${x}
+                </button>
+
+              `)
+              .join("")
+          }
+
+        </div>
+
+
+        <div class="match-prediction">
+
+          ${
+            p.id
+            ?`
+              <b>Moja prognoza:</b>
+              ${p.predicted_home_score}:${p.predicted_away_score}
+              · ishod ${esc(p.predicted_outcome||"-")}
+            `
+            :`
+              <span class="muted">
+                Moja prognoza još nije unesena.
+              </span>
+            `
+          }
+
+        </div>
+
+      </div>
+
+      `
     );
 
   });
@@ -2016,14 +1829,18 @@ function showPredictions(){
     box.insertAdjacentHTML(
       "beforeend",
       `
-      <div class="actions">
+      <div class="card">
 
-        <button
-          class="btn primary"
-          id="saveAll"
-        >
-          Spremi prognoze
-        </button>
+        <div class="actions">
+
+          <button
+            class="btn primary"
+            id="saveAll"
+          >
+            Spremi prognoze
+          </button>
+
+        </div>
 
       </div>
       `
@@ -2217,9 +2034,13 @@ function showResults(){
 
     </p>
 
-    <div id="res"></div>
-
   </div>
+
+
+  <div
+    class="match-list"
+    id="res"
+  ></div>
 
   `;
 
@@ -2231,9 +2052,11 @@ function showResults(){
   if(!matches.length){
 
     box.innerHTML=`
-      <p class="muted">
-        Nema utakmica.
-      </p>
+      <div class="card">
+        <p class="muted">
+          Nema utakmica.
+        </p>
+      </div>
     `;
 
     return;
@@ -2241,7 +2064,7 @@ function showResults(){
   }
 
 
-  matches.forEach((m,index)=>{
+  matches.forEach(m=>{
 
     const hasActual=
       m.actual_home_score!=null &&
@@ -2258,18 +2081,32 @@ function showResults(){
       matchStatus(m);
 
 
+    const visible=
+      locked()||round.is_finished
+      ?predictions.filter(
+        p=>p.match_id===m.id
+      )
+      :
+      predictions.filter(
+        p=>
+          p.match_id===m.id &&
+          p.user_id===user.id
+      );
+
+
     let html=`
 
       <div class="match-card">
 
         <div class="match-card-top">
 
-          <span class="match-number">
-            Utakmica ${index+1}
+          <span class="match-date">
+            📅 ${fmtDate(m.kickoff_at)}
           </span>
 
-          <span class="match-status ${status.cls}">
-            ${status.icon}
+          <span
+            class="match-status ${status.cls}"
+          >
             ${status.text}
           </span>
 
@@ -2278,26 +2115,13 @@ function showResults(){
 
         <div class="match-teams">
 
-          <div>
-
-            <div class="match-team">
-              ${esc(m.home_team)}
-            </div>
-
-            <div class="match-date">
-              📅 ${fmtDate(m.kickoff_at)}
-            </div>
-
+          <div class="match-team">
+            ${esc(m.home_team)}
           </div>
-
 
           <div class="match-vs">
-            ${hasActual
-              ?`<b>${actual}</b>`
-              :"VS"
-            }
+            ${hasActual?actual:"–"}
           </div>
-
 
           <div class="match-team away">
             ${esc(m.away_team)}
@@ -2306,41 +2130,31 @@ function showResults(){
         </div>
 
 
-        <div
-          class="pred-list"
-          style="margin-top:14px"
-        >
+        <div class="match-result">
+
+          Stvarni rezultat:
+          <b>${actual}</b>
+
+        </div>
+
+        <div class="pred-list">
 
     `;
 
 
-    const visible=
-      predictions.filter(
-        p=>p.match_id===m.id
-      );
+    if(visible.length){
 
+      visible.forEach(p=>{
 
-    const list=
-      locked()||round.is_finished
+        let points=null;
 
-      ?visible
-
-      :visible.filter(
-        p=>p.user_id===user.id
-      );
-
-
-    if(list.length){
-
-      list.forEach(p=>{
-
-        let pointsText="—";
-        let pointsClass="";
+        let exact=false;
+        let outcome=false;
 
 
         if(hasActual){
 
-          const temporaryPoints=
+          points=
             calculatePoints(
               p.predicted_home_score,
               p.predicted_away_score,
@@ -2350,24 +2164,19 @@ function showResults(){
             );
 
 
-          if(temporaryPoints!=null){
+          exact=
+            Number(p.predicted_home_score)===
+              Number(m.actual_home_score) &&
+            Number(p.predicted_away_score)===
+              Number(m.actual_away_score);
 
-            pointsText=
-              `${temporaryPoints} bod.`;
 
-            if(temporaryPoints===4)
-              pointsClass="points-exact";
-
-            else if(temporaryPoints===1)
-              pointsClass="points-outcome";
-
-          }
-
-        }
-        else if(round.is_finished){
-
-          pointsText=
-            `${p.points??0} bod.`;
+          outcome=
+            p.predicted_outcome===
+            outcomeFromScore(
+              m.actual_home_score,
+              m.actual_away_score
+            );
 
         }
 
@@ -2381,21 +2190,43 @@ function showResults(){
             </b>
 
             :
-
             ${p.predicted_home_score}
             :
             ${p.predicted_away_score}
 
             · ishod
-            ${esc(
-              p.predicted_outcome||"-"
-            )}
+            ${esc(p.predicted_outcome||"-")}
 
-            ·
+            ${
+              points!=null
+              ?`
+                ·
+                <span class="points-badge">
+                  ${points} bod.
+                </span>
+              `
+              :""
+            }
 
-            <b class="match-points ${pointsClass}">
-              ${pointsText}
-            </b>
+            ${
+              exact
+              ?`
+                <div class="hit-result">
+                  ⭐ Pogodio rezultat
+                </div>
+              `
+              :""
+            }
+
+            ${
+              outcome
+              ?`
+                <div class="hit-outcome">
+                  ✓ Pogodio ishod
+                </div>
+              `
+              :""
+            }
 
           </div>
 
@@ -2407,9 +2238,11 @@ function showResults(){
     else{
 
       html+=`
+
         <div class="muted">
           Nema prognoza.
         </div>
+
       `;
 
     }
@@ -2458,7 +2291,7 @@ async function showTable(){
     ps,
     sp,
     preds,
-    roundsRes
+    finishedRounds
   ]=
     await Promise.all([
 
@@ -2473,7 +2306,7 @@ async function showTable(){
       supabase
         .from("predictions")
         .select(
-          "user_id,points,match_id"
+          "user_id,match_id,points"
         ),
 
       supabase
@@ -2485,10 +2318,14 @@ async function showTable(){
           "is_finished",
           true
         )
+        .eq(
+          "is_published",
+          true
+        )
         .order(
           "round_number",
           {ascending:false}
-        })
+        )
 
     ]);
 
@@ -2561,6 +2398,68 @@ async function showTable(){
     });
 
 
+  let lastRound=null;
+
+
+  if(
+    !finishedRounds.error &&
+    finishedRounds.data?.length
+  ){
+
+    lastRound=
+      finishedRounds.data[0];
+
+  }
+
+
+  let lastRoundMatchIds=[];
+
+
+  if(lastRound){
+
+    const lm=
+      await supabase
+        .from("matches")
+        .select("id")
+        .eq(
+          "round_id",
+          lastRound.id
+        );
+
+
+    if(!lm.error){
+
+      lastRoundMatchIds=
+        (lm.data||[]).map(
+          x=>x.id
+        );
+
+    }
+
+  }
+
+
+  const lastRoundPoints={};
+
+
+  (preds.data||[])
+    .forEach(p=>{
+
+      if(
+        lastRoundMatchIds.includes(
+          p.match_id
+        )
+      ){
+
+        lastRoundPoints[p.user_id]=
+          (lastRoundPoints[p.user_id]||0)+
+          Number(p.points||0);
+
+      }
+
+    });
+
+
   const rows=
     (ps.data||[])
       .map(p=>{
@@ -2585,7 +2484,13 @@ async function showTable(){
 
           nova,
 
-          total:start+nova
+          total:
+            start+nova,
+
+          last:
+            lastRound
+            ?lastRoundPoints[p.id]||0
+            :null
 
         };
 
@@ -2596,225 +2501,130 @@ async function showTable(){
       );
 
 
-  const finishedRounds=
-    roundsRes.data||[];
-
-
-  let lastRound=null;
-  let lastRoundPoints={};
-
-
-  if(finishedRounds.length){
-
-    lastRound=
-      finishedRounds[0];
-
-
-    const lastMatches=
-      await supabase
-        .from("matches")
-        .select("id")
-        .eq(
-          "round_id",
-          lastRound.id
-        );
-
-
-    if(!lastMatches.error){
-
-      const ids=
-        (lastMatches.data||[])
-          .map(x=>x.id);
-
-
-      if(ids.length){
-
-        const lp=
-          await supabase
-            .from("predictions")
-            .select(
-              "user_id,points"
-            )
-            .in(
-              "match_id",
-              ids
-            );
-
-
-        if(!lp.error){
-
-          (lp.data||[])
-            .forEach(x=>{
-
-              lastRoundPoints[x.user_id]=
-                (lastRoundPoints[x.user_id]||0)+
-                Number(x.points||0);
-
-            });
-
-        }
-
-      }
-
-    }
-
-  }
-
-
   c.innerHTML=`
 
-  <div class="card table-header-card">
+  <div class="card">
 
     <h2>
       🏆 Ukupni poredak
     </h2>
 
     <p class="muted">
-      Ukupni bodovi uključuju početne bodove
-      i sve službeno obračunate bodove.
-    </p>
-
-
-    <div style="margin-top:14px">
-
-      <div
-        class="leaderboard-row"
-        style="font-size:12px;color:#6d778a;font-weight:800"
-      >
-
-        <div>#</div>
-        <div>Igrač</div>
-        <div class="hide-mobile" style="text-align:right">
-          Početni
-        </div>
-        <div style="text-align:right">
-          Nova
-        </div>
-        <div style="text-align:right">
-          Ukupno
-        </div>
-
-      </div>
-
 
       ${
-        rows
-          .map((x,i)=>{
-
-            const medal=
-              i===0
-              ?"🥇"
-              :
-            i===1
-              ?"🥈"
-              :
-            i===2
-              ?"🥉"
-              :
-            `${i+1}`;
-
-
-            const last=
-              lastRound
-              ?(
-                lastRoundPoints[x.id]||0
-              )
-              :null;
-
-
-            return `
-
-              <div
-                class="leaderboard-row ${i===0?"first":""}"
-              >
-
-                <div class="leaderboard-position">
-                  ${medal}
-                </div>
-
-
-                <div class="leaderboard-player">
-
-                  ${esc(x.name)}
-
-                  ${
-                    lastRound
-                    ?`
-                      <span class="leaderboard-sub">
-                        ${last} bod.
-                        u ${lastRound.round_number}. kolu
-                      </span>
-                    `
-                    :""
-                  }
-
-                </div>
-
-
-                <div class="leaderboard-number start-col hide-mobile">
-                  ${x.start}
-                </div>
-
-
-                <div class="leaderboard-number">
-                  ${x.nova}
-                </div>
-
-
-                <div class="leaderboard-total">
-                  ${x.total}
-                </div>
-
-              </div>
-
-            `;
-
-          })
-          .join("")
+        lastRound
+        ?`Dodatno su prikazani bodovi iz
+           ${lastRound.round_number}. završenog kola.`
+        :"Još nema završenog kola."
       }
 
-    </div>
+    </p>
+
+    <div style="overflow-x:auto">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+
+            <th>Igrač</th>
+
+            <th>Početni</th>
+
+            <th>Nova</th>
+
+            <th>
+              ${
+                lastRound
+                ?`${lastRound.round_number}. kolo`
+                :"Zadnje kolo"
+              }
+            </th>
+
+            <th>Ukupno</th>
+
+          </tr>
+
+        </thead>
 
 
-    ${
-      lastRound
-      ?`
+        <tbody>
 
-        <div class="last-round-box">
+          ${
+            rows
+              .map(
+                (x,i)=>`
 
-          <div class="last-round-title">
-            📊 Bodovi u ${lastRound.round_number}. kolu
-          </div>
+                <tr>
 
-          <div class="last-round-list">
+                  <td class="rank-number">
 
-            ${
-              rows
-                .map(x=>`
+                    ${
+                      i===0
+                      ?"🥇"
+                      :
+                      i===1
+                      ?"🥈"
+                      :
+                      i===2
+                      ?"🥉"
+                      :i+1
+                    }
 
-                  <div class="last-round-player">
+                  </td>
 
-                    <span>
+
+                  <td>
+                    <b>
                       ${esc(x.name)}
-                    </span>
+                    </b>
+                  </td>
+
+
+                  <td>
+                    ${x.start}
+                  </td>
+
+
+                  <td>
+                    ${x.nova}
+                  </td>
+
+
+                  <td class="last-round">
+
+                    ${
+                      x.last==null
+                      ?"—"
+                      :x.last
+                    }
+
+                  </td>
+
+
+                  <td>
 
                     <b>
-                      ${lastRoundPoints[x.id]||0}
+                      ${x.total}
                     </b>
 
-                  </div>
+                  </td>
 
-                `)
-                .join("")
-            }
+                </tr>
 
-          </div>
+              `
+              )
+              .join("")
+          }
 
-        </div>
+        </tbody>
 
-      `
-      :""
-    }
+      </table>
+
+    </div>
 
   </div>
 
@@ -2842,90 +2652,35 @@ async function showStats(){
       </h2>
 
       <p class="muted">
-        Pregled tvojih ukupnih rezultata
-        i učinka kroz završena kola.
+        Pregled tvojih dosadašnjih rezultata.
       </p>
 
-      <p>
-        <b>
-          ${esc(profile?.name||"Igrač")}
-        </b>
-      </p>
-
-      <p class="muted">
-        Učitavanje statistike...
-      </p>
+      <div id="statsContent">
+        Učitavanje...
+      </div>
 
     </div>
 
   `;
 
 
-  const [
-    roundsRes,
-    matchesRes,
-    predsRes
-  ]=
-    await Promise.all([
-
-      supabase
-        .from("rounds")
-        .select(
-          "id,round_number,is_finished"
-        )
-        .eq(
-          "is_finished",
-          true
-        )
-        .order(
-          "round_number",
-          {ascending:true}
-        ),
-
-      supabase
-        .from("matches")
-        .select(
-          "id,round_id,actual_home_score,actual_away_score"
-        ),
-
-      supabase
-        .from("predictions")
-        .select(
-          "match_id,user_id,predicted_home_score,predicted_away_score,predicted_outcome,points"
-        )
-        .eq(
-          "user_id",
-          user.id
-        )
-
-    ]);
+  const allMatches=
+    await supabase
+      .from("matches")
+      .select(
+        "id,round_id,actual_home_score,actual_away_score"
+      );
 
 
-  if(
-    roundsRes.error ||
-    matchesRes.error ||
-    predsRes.error
-  ){
+  if(allMatches.error){
 
-    const error=
-      roundsRes.error ||
-      matchesRes.error ||
-      predsRes.error;
+    document.getElementById(
+      "statsContent"
+    ).innerHTML=`
 
-
-    c.innerHTML=`
-
-      <div class="card">
-
-        <h2>
-          📊 Moja statistika
-        </h2>
-
-        <p class="danger">
-          ${esc(error.message)}
-        </p>
-
-      </div>
+      <p class="danger">
+        ${esc(allMatches.error.message)}
+      </p>
 
     `;
 
@@ -2934,77 +2689,147 @@ async function showStats(){
   }
 
 
-  const finishedRounds=
-    roundsRes.data||[];
-
-
-  const allMatches=
-    matchesRes.data||[];
-
-
-  const myPredictions=
-    predsRes.data||[];
-
-
-  const predByMatch={};
-
-
-  myPredictions.forEach(p=>{
-
-    predByMatch[p.match_id]=p;
-
-  });
-
-
-  let totalPoints=0;
-  let exactCount=0;
-  let outcomeCount=0;
-  let completedPredictions=0;
-
-  const roundTotals=[];
-
-
-  finishedRounds.forEach(r=>{
-
-    const roundMatches=
-      allMatches.filter(
-        m=>m.round_id===r.id
+  const finished=
+    await supabase
+      .from("rounds")
+      .select(
+        "id,round_number,is_finished"
+      )
+      .eq(
+        "is_finished",
+        true
+      )
+      .eq(
+        "is_published",
+        true
+      )
+      .order(
+        "round_number",
+        {ascending:true}
       );
 
 
-    let roundPoints=0;
+  if(finished.error){
+
+    document.getElementById(
+      "statsContent"
+    ).innerHTML=`
+
+      <p class="danger">
+        ${esc(finished.error.message)}
+      </p>
+
+    `;
+
+    return;
+
+  }
 
 
-    roundMatches.forEach(m=>{
+  const myPreds=
+    await supabase
+      .from("predictions")
+      .select("*")
+      .eq(
+        "user_id",
+        user.id
+      );
 
-      const p=
-        predByMatch[m.id];
+
+  if(myPreds.error){
+
+    document.getElementById(
+      "statsContent"
+    ).innerHTML=`
+
+      <p class="danger">
+        ${esc(myPreds.error.message)}
+      </p>
+
+    `;
+
+    return;
+
+  }
 
 
-      if(!p)
+  const matchesById={};
+
+
+  (allMatches.data||[])
+    .forEach(m=>{
+
+      matchesById[m.id]=m;
+
+    });
+
+
+  const finishedIds=
+    new Set(
+      (finished.data||[])
+        .map(r=>r.id)
+    );
+
+
+  const finishedMatches=
+    (allMatches.data||[])
+      .filter(
+        m=>
+          finishedIds.has(
+            m.round_id
+          )
+      );
+
+
+  let earned=0;
+  let exactCount=0;
+  let outcomeCount=0;
+
+
+  const roundPoints={};
+
+
+  (myPreds.data||[])
+    .forEach(p=>{
+
+      const m=
+        matchesById[p.match_id];
+
+
+      if(!m)
         return;
 
 
-      const hasActual=
-        m.actual_home_score!=null &&
-        m.actual_away_score!=null;
-
-
-      if(!hasActual)
+      if(
+        !finishedIds.has(
+          m.round_id
+        )
+      )
         return;
 
 
-      completedPredictions++;
+      if(
+        m.actual_home_score==null ||
+        m.actual_away_score==null
+      )
+        return;
 
 
-      const points=
-        Number(
-          p.points||0
+      const pts=
+        calculatePoints(
+          p.predicted_home_score,
+          p.predicted_away_score,
+          p.predicted_outcome,
+          m.actual_home_score,
+          m.actual_away_score
         );
 
 
-      roundPoints+=points;
-      totalPoints+=points;
+      if(pts==null)
+        return;
+
+
+      earned+=pts;
 
 
       const exact=
@@ -3015,8 +2840,8 @@ async function showStats(){
 
 
       const outcome=
-        outcomeCorrect(
-          p.predicted_outcome,
+        p.predicted_outcome===
+        outcomeFromScore(
           m.actual_home_score,
           m.actual_away_score
         );
@@ -3029,193 +2854,229 @@ async function showStats(){
       if(outcome)
         outcomeCount++;
 
-    });
 
-
-    roundTotals.push({
-
-      round:r.round_number,
-
-      points:roundPoints
+      roundPoints[m.round_id]=
+        (roundPoints[m.round_id]||0)+
+        pts;
 
     });
 
-  });
+
+  const starting=
+    START[profile.name]||0;
 
 
-  /*
-    Ako postoji spremljeni points iz završene utakmice,
-    on predstavlja službeni bodovni obračun.
-  */
+  const startFromDb=
+    await supabase
+      .from("starting_points")
+      .select("*");
 
 
-  const roundsPlayed=
-    finishedRounds.length;
+  let actualStarting=starting;
+
+
+  if(!startFromDb.error){
+
+    const found=
+      (startFromDb.data||[])
+        .find(x=>
+          (x.name||x.player_name)===
+          profile.name
+        );
+
+
+    if(found){
+
+      actualStarting=
+        Number(
+          found.points ??
+          found.starting_points ??
+          starting
+        );
+
+    }
+
+  }
+
+
+  const total=
+    actualStarting+earned;
+
+
+  const finishedCount=
+    (finished.data||[]).length;
 
 
   const average=
-    roundsPlayed
-    ?(
-      totalPoints/
-      roundsPlayed
-    ).toFixed(1)
-    :"0";
+    finishedCount
+    ?(earned/finishedCount).toFixed(1)
+    :"0.0";
 
 
-  const bestRound=
-    roundTotals.length
-    ?roundTotals.reduce(
-      (best,x)=>
-        x.points>best.points
-          ?x
-          :best,
-      roundTotals[0]
-    )
-    :null;
+  let bestRound=null;
+
+
+  (finished.data||[])
+    .forEach(r=>{
+
+      const pts=
+        roundPoints[r.id]||0;
+
+
+      if(
+        bestRound==null ||
+        pts>bestRound.points
+      ){
+
+        bestRound={
+          round:r.round_number,
+          points:pts
+        };
+
+      }
+
+    });
 
 
   const predictionCount=
-    completedPredictions;
+    (myPreds.data||[])
+      .filter(p=>{
+
+        const m=
+          matchesById[p.match_id];
+
+        return(
+          m &&
+          finishedIds.has(m.round_id) &&
+          m.actual_home_score!=null &&
+          m.actual_away_score!=null
+        );
+
+      })
+      .length;
 
 
-  const outcomeRate=
+  const accuracy=
     predictionCount
     ?Math.round(
-      outcomeCount/
-      predictionCount*
-      100
+      (outcomeCount/
+       predictionCount)*100
     )
     :0;
 
 
-  const currentStart=
-    START[profile?.name]||0;
+  const stats=
+    document.getElementById(
+      "statsContent"
+    );
 
 
-  c.innerHTML=`
+  stats.innerHTML=`
 
-    <div class="card">
-
-      <h2>
-        📊 Moja statistika
-      </h2>
-
-      <p class="muted">
-        <b>${esc(profile?.name||"Igrač")}</b>
-      </p>
+    <h3>
+      ${esc(profile.name)}
+    </h3>
 
 
-      <div class="stats-grid">
+    <div class="stats-grid">
 
-        <div class="stat-box">
+      <div class="stat-box">
 
-          <div class="stat-label">
-            Ukupno bodova
-          </div>
-
-          <div class="stat-value">
-            ${currentStart+totalPoints}
-          </div>
-
+        <div class="stat-label">
+          Ukupno bodova
         </div>
 
-
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Bodovi iz kola
-          </div>
-
-          <div class="stat-value">
-            ${totalPoints}
-          </div>
-
+        <div class="stat-value">
+          ${total}
         </div>
 
-
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Točnih rezultata
-          </div>
-
-          <div class="stat-value">
-            ${exactCount}
-          </div>
-
-        </div>
-
-
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Točnih ishoda
-          </div>
-
-          <div class="stat-value">
-            ${outcomeCount}
-          </div>
-
+        <div class="stat-small">
+          ${actualStarting} početnih + ${earned} osvojenih
         </div>
 
       </div>
 
 
-      <div class="stats-grid">
+      <div class="stat-box">
 
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Prosjek po kolu
-          </div>
-
-          <div class="stat-value">
-            ${average}
-          </div>
-
+        <div class="stat-label">
+          Prosjek po kolu
         </div>
 
-
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Najbolje kolo
-          </div>
-
-          <div class="stat-value">
-            ${
-              bestRound
-              ?bestRound.points
-              :"0"
-            }
-          </div>
-
+        <div class="stat-value">
+          ${average}
         </div>
 
-
-        <div class="stat-box">
-
-          <div class="stat-label">
-            Pogođeni ishodi
-          </div>
-
-          <div class="stat-value">
-            ${outcomeRate}%
-          </div>
-
+        <div class="stat-small">
+          kroz ${finishedCount} završenih kola
         </div>
 
+      </div>
 
-        <div class="stat-box">
 
-          <div class="stat-label">
-            Odigrana kola
-          </div>
+      <div class="stat-box">
 
-          <div class="stat-value">
-            ${roundsPlayed}
-          </div>
+        <div class="stat-label">
+          Točnih rezultata
+        </div>
 
+        <div class="stat-value">
+          ${exactCount}
+        </div>
+
+        <div class="stat-small">
+          ⭐ točan rezultat
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div class="stat-label">
+          Točnih ishoda
+        </div>
+
+        <div class="stat-value">
+          ${outcomeCount}
+        </div>
+
+        <div class="stat-small">
+          ✓ 1 / X / 2
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div class="stat-label">
+          Prognoziranih utakmica
+        </div>
+
+        <div class="stat-value">
+          ${predictionCount}
+        </div>
+
+        <div class="stat-small">
+          na završenim utakmicama
+        </div>
+
+      </div>
+
+
+      <div class="stat-box">
+
+        <div class="stat-label">
+          Uspješnost ishoda
+        </div>
+
+        <div class="stat-value">
+          ${accuracy}%
+        </div>
+
+        <div class="stat-small">
+          pogođeni ishodi / prognoze
         </div>
 
       </div>
@@ -3223,56 +3084,26 @@ async function showStats(){
     </div>
 
 
-    <div class="card">
+    ${
+      bestRound
+      ?`
+        <div class="best-round">
 
-      <h3>
-        🏁 Učinak po kolima
-      </h3>
+          <b>
+            🏆 Najbolje kolo
+          </b>
 
-      ${
-        roundTotals.length
+          <div style="margin-top:5px">
 
-        ?`
-
-          <div class="stats-list">
-
-            ${
-              roundTotals
-                .slice()
-                .reverse()
-                .map(x=>`
-
-                  <div class="stats-row">
-
-                    <span>
-                      ${x.round}. kolo
-                    </span>
-
-                    <b>
-                      ${x.points} bod.
-                    </b>
-
-                  </div>
-
-                `)
-                .join("")
-            }
+            ${bestRound.round}. kolo —
+            <b>${bestRound.points} bodova</b>
 
           </div>
 
-        `
-
-        :
-
-        `
-          <p class="muted">
-            Još nema završenih kola.
-          </p>
-        `
-
-      }
-
-    </div>
+        </div>
+      `
+      :""
+    }
 
   `;
 
@@ -3388,7 +3219,9 @@ async function showHistory(){
       el.onclick=()=>{
 
         historyRoundId=
-          Number(el.dataset.historyId);
+          Number(
+            el.dataset.historyId
+          );
 
         showHistory();
 
@@ -3424,7 +3257,8 @@ async function showHistory(){
 
 
       if(firstOther)
-        historyRoundId=firstOther.id;
+        historyRoundId=
+          firstOther.id;
 
     }
 
@@ -3440,11 +3274,8 @@ async function showHistory(){
   }
 
 
-  if(historyRoundId==null){
-
+  if(historyRoundId==null)
     return;
-
-  }
 
 
   await showHistoryRound(
@@ -3877,6 +3708,7 @@ function showAdmin(){
   if(!round){
 
     showNewRoundForm();
+
     return;
 
   }
@@ -4563,13 +4395,15 @@ async function saveAdminSchedule(){
   }
 
 
-  const newKickoffs=
-    data.map(x=>x.kickoff);
+  const allKickoffs=
+    data.map(
+      x=>x.kickoff
+    );
 
 
   const newLockedAt=
     lockFromKickoffs(
-      newKickoffs
+      allKickoffs
     );
 
 
@@ -4667,7 +4501,7 @@ function renderAdminResults(){
               Rezultat
             </label>
 
-            <div class="score">
+            <div class="match-score">
 
               <input
                 class="ah"
@@ -5098,7 +4932,9 @@ async function createRound(){
 
   const numberValue=
     document
-      .getElementById("newRoundNumber")
+      .getElementById(
+        "newRoundNumber"
+      )
       .value
       .trim();
 
@@ -5125,7 +4961,9 @@ async function createRound(){
   const existing=
     await supabase
       .from("rounds")
-      .select("id,round_number")
+      .select(
+        "id,round_number"
+      )
       .eq(
         "round_number",
         roundNumber
@@ -5253,7 +5091,9 @@ async function createRound(){
 
   const lockedAt=
     lockFromKickoffs(
-      games.map(x=>x.kickoff)
+      games.map(
+        x=>x.kickoff
+      )
     );
 
 
